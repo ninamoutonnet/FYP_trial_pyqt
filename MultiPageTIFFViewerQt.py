@@ -95,12 +95,24 @@ class MultiPageTIFFViewerQt(QWidget):
         if len(fileName) == 0:
             if QT_VERSION_STR[0] == '4':
                 fileName = QFileDialog.getOpenFileName(self, "Open TIFF stack file.")
+                ########################
+                #    Nina's addition   #
+                ########################
+                self.openFileName = fileName
             elif QT_VERSION_STR[0] == '5':
                 fileName, dummy = QFileDialog.getOpenFileName(self, "Open TIFF stack file.")
+                ########################
+                #    Nina's addition   #
+                ########################
+                self.openFileName = fileName
         fileName = str(fileName)
         if len(fileName) and os.path.isfile(fileName):
             self._tiffCaptureHandle = tiffcapture.opentiff(fileName)
             self.showFrame(0)
+            ########################
+            #    Nina's addition   #
+            ########################
+            self.openFileName = fileName
 
     def numFrames(self):
         """ Return the number of image frames in the stack.

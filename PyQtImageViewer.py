@@ -125,11 +125,23 @@ class ImageViewerQt(QGraphicsView):
         if len(fileName) == 0:
             if QT_VERSION_STR[0] == '4':
                 fileName = QFileDialog.getOpenFileName(self, "Open image file.")
+                ########################
+                #    Nina's addition   #
+                ########################
+                self.openFileName = fileName
             elif QT_VERSION_STR[0] == '5':
                 fileName, dummy = QFileDialog.getOpenFileName(self, "Open image file.")
+                ########################
+                #    Nina's addition   #
+                ########################
+                self.openFileName = fileName
         if len(fileName) and os.path.isfile(fileName):
             image = QImage(fileName)
             self.setImage(image)
+            ########################
+            #    Nina's addition   #
+            ########################
+            self.openFileName = fileName
 
     def updateViewer(self):
         """ Show current zoom (if showing entire image, apply current aspect ratio mode).
