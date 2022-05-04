@@ -2,7 +2,6 @@ import sys
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtGui as qtg
-from PyQt5 import QtCore as qtc
 from MultiPageTIFFViewerQt import MultiPageTIFFViewerQt
 import pyqtgraph as pg
 from ImageProcessing import fluoMap
@@ -163,19 +162,99 @@ class MainWindow(qtw.QWidget):
         im = Image.open(self.filename)
         width, height = im.size
         l3.setText(f"Frame pixel size: {width}x{height}")
-
         l4.setText('File path: ' + self.filename)
+
+        # Create a button for each cell sorting algorithm
+        button_CNMFE = qtw.QPushButton(
+            "CNMFE",
+            self,
+            checkable=True,
+            checked=True,
+            shortcut=qtg.QKeySequence('Ctrl+p')
+        )
+
+        button_SVD = qtw.QPushButton(
+            "SVD",
+            self,
+            checkable=True,
+            checked=True,
+            shortcut=qtg.QKeySequence('Ctrl+p')
+        )
+
+        button_ORPCA = qtw.QPushButton(
+            "ORPCA",
+            self,
+            checkable=True,
+            checked=True,
+            shortcut=qtg.QKeySequence('Ctrl+p')
+        )
+
+        button_Manual = qtw.QPushButton(
+            "Manual",
+            self,
+            checkable=True,
+            checked=True,
+            shortcut=qtg.QKeySequence('Ctrl+p')
+        )
+
+        # create the 'base' widget on which all the other widgets will be
+        central_QWidget = qtw.QWidget()
 
         # Add widget objects to a layout
         layout = qtw.QVBoxLayout()
         self.setLayout(layout)
-        layout.addWidget(l1)
-        layout.addWidget(l2)
-        layout.addWidget(l3)
-        layout.addWidget(l4)
-        layout.addWidget(self.stackViewer)
-        layout.addWidget(button)
-        layout.addWidget(button_pixel_intensity_var)
+        layout.addWidget(central_QWidget)
+
+        layout_2 = qtw.QHBoxLayout()
+        central_QWidget.setLayout(layout_2)
+        layout_2.addWidget(self.stackViewer)
+        right_layout = qtw.QVBoxLayout()
+        layout_2.addLayout(right_layout)
+        right_layout.addWidget(l1)
+        right_layout.addWidget(l2)
+        right_layout.addWidget(l3)
+        right_layout.addWidget(l4)
+
+        simple_processing_widget = qtw.QGroupBox('Quick overview')
+        right_layout.addWidget(simple_processing_widget)
+        simple_processing_layout = qtw.QHBoxLayout()
+        simple_processing_widget.setLayout(simple_processing_layout)
+        simple_processing_layout.addWidget(button_pixel_intensity_var)
+        simple_processing_layout.addWidget(button)
+
+        complex_processing_widget = qtw.QGroupBox('Cell segmentation')
+        right_layout.addWidget(complex_processing_widget)
+        complex_processing_layout = qtw.QVBoxLayout()
+        complex_processing_widget.setLayout(complex_processing_layout)
+        complex_processing_layout.addWidget(button_Manual)
+        complex_processing_layout.addWidget(button_SVD)
+        complex_processing_layout.addWidget(button_ORPCA)
+        complex_processing_layout.addWidget(button_CNMFE)
+
+        complex_processing_widget.setSizePolicy(
+            qtw.QSizePolicy.Preferred,
+            qtw.QSizePolicy.Expanding
+        )
+
+        button_Manual.setSizePolicy(
+            qtw.QSizePolicy.Preferred,
+            qtw.QSizePolicy.Preferred
+        )
+
+        button_SVD.setSizePolicy(
+            qtw.QSizePolicy.Preferred,
+            qtw.QSizePolicy.Preferred
+        )
+
+        button_ORPCA.setSizePolicy(
+            qtw.QSizePolicy.Preferred,
+            qtw.QSizePolicy.Preferred
+        )
+
+        button_CNMFE.setSizePolicy(
+            qtw.QSizePolicy.Preferred,
+            qtw.QSizePolicy.Preferred
+        )
 
         #  end main UI code - Display the UI
         self.show()

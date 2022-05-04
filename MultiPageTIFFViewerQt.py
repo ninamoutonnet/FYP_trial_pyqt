@@ -220,7 +220,7 @@ if __name__ == '__main__':
 
     # Load entire stack into memory as a 3D NumPy ndarray.
     entireStackArray = stackViewer.getAllFrames()
-    print(entireStackArray.shape)
+    print('the size of the loaded array is: ' + entireStackArray.shape)
 
     # Show viewer and run application.
     stackViewer.show()
