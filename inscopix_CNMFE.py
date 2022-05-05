@@ -181,7 +181,7 @@ footprints, traces = inscopix_cnmfe.run_cnmfe(
 )
 
 # number of neurons we wish to visualize
-''' num_neurons = 5
+num_neurons = 5
 print(footprints.shape)
 print(traces.shape)
 for neuron_index in range(num_neurons):
@@ -208,7 +208,7 @@ for neuron_index in range(num_neurons):
         fontsize=14
     )
 
-    plt.show() '''
+    plt.show()
 
 plot_footprints_on_grid(footprints)
 

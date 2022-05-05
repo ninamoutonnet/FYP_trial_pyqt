@@ -31,10 +31,11 @@ def fluoMap(filename):
     OUTFILE2 = 'average_tif_resized.tif'
 
     # print('Resizing TIF pages')
+    downsampling_factor = 1
     pages = []
     imagehandler = Image.open(INFILE)
     for page in ImageSequence.Iterator(imagehandler):
-        new_size = (int(page.size[0] / 4), int(page.size[1] / 4))
+        new_size = (int(page.size[0] / downsampling_factor), int(page.size[1] / downsampling_factor))
         page = page.resize(new_size)
         pages.append(page)
     #print('Writing multipage TIF: ', pages[0])
