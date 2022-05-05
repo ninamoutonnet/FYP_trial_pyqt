@@ -19,7 +19,7 @@ class PixelTemporalVariation(qtw.QWidget):
         label = qtw.QLabel('Pixel Variation 1D', self, margin=10)
 
         # give the tiff file to the intensity function
-        print('pixel x: ', x , 'and y: ', y, 'of file: ', filename)
+        # print('pixel x: ', x , 'and y: ', y, 'of file: ', filename)
 
         # Read the image from the TIFF file as numpy array:
         imfile = tifffile.imread(filename)
@@ -160,8 +160,8 @@ class MainWindow(qtw.QWidget):
             l2.setText(f'Size: {os.path.getsize(self.filename)} Bytes')
 
         im = Image.open(self.filename)
-        width, height = im.size
-        l3.setText(f"Frame pixel size: {width}x{height}")
+        self.width_input_file, self.height_input_file = im.size
+        l3.setText(f"Frame pixel size: {self.width_input_file}x{self.height_input_file}")
         l4.setText('File path: ' + self.filename)
 
         # Create a button for each cell sorting algorithm
@@ -265,19 +265,39 @@ class MainWindow(qtw.QWidget):
         button_pixel_intensity_var.clicked.connect(self.WindowIntensityVariation)
 
     def GetPos(self, event):
-        # get the viewer pixel size
-        viewer_size = self.stackViewer.viewer.size()
-        print('viewer size ', self.stackViewer.viewer.size())
-        # get the image size CHANGE THIS! THIS IS HARDCODED
-        image_size = (512, 512)
-        # get the differences in x/y coordinates -> they are divided by 2 because the image is centred in the viewer.
-        # subtract that when using the x/y coordinates
+        # get the viewer size
+        viewer_size = (self.stackViewer.viewer.size().width(), self.stackViewer.viewer.size().height())
+        print('viewer size ', viewer_size)
+        # get the image size
+        image_size = (self.width_input_file, self.height_input_file)
+        print('image size ', image_size)
 
         x = event.pos().x()
         y = event.pos().y()
-        print('x= ', x)
-        print('y= ', y)
-        self.w = PixelTemporalVariation(x, y, self.filename)
+
+        # 3 possible scenarios; assume that the input is SQUARE
+        if viewer_size[0] > viewer_size[1]: # the width of the viewer is bigger than the height
+            print('Width > height')
+            scaling_factor = image_size[1]/viewer_size[1]
+            x_offset = (viewer_size[0] - viewer_size[1])/2
+            y_coordinate = y*scaling_factor
+            x_coordinate = (x-x_offset)*scaling_factor
+
+        elif viewer_size[0] < viewer_size[1]:# the width of the viewer is smaller than the height
+            print('height > width')
+            scaling_factor = image_size[0] / viewer_size[0]
+            y_offset = (viewer_size[1] - viewer_size[0]) / 2
+            y_coordinate = (y-y_offset) * scaling_factor
+            x_coordinate = x * scaling_factor
+
+        else:  # the width of the viewer  =  height
+            print('Width = height')
+            scaling_factor = image_size[0] / viewer_size[0]
+            y_coordinate = y * scaling_factor
+            x_coordinate = x * scaling_factor
+
+        print(f'x/y input,  {x}  {y} new coord:  {x_coordinate}  {y_coordinate}')
+        self.w = PixelTemporalVariation(round(x_coordinate), round(y_coordinate), self.filename)
         self.w.show()
 
     def WindowIntensityVariation(self):

@@ -114,7 +114,7 @@ class ImageViewerQt(QGraphicsView):
             self._pixmapHandle.setPixmap(pixmap)
         else:
             self._pixmapHandle = self.scene.addPixmap(pixmap)
-        self.setSceneRect(QRectF(pixmap.rect()))  # Set scene size to image size.
+        self.setSceneRect(QRectF(pixmap.rect()))   # Set scene size to image size.
         self.updateViewer()
 
     def loadImageFromFile(self, fileName=""):
