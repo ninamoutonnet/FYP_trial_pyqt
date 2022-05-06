@@ -201,11 +201,12 @@ class MainWindow(qtw.QWidget):
 
         # create the text widgets for the entry of the downsampling factor and sampling rate
         downsample_value_widget = qtw.QLineEdit()
-        #downsample_value_widget.setValidator(qtw.QIntValidator())  # check that the downsample is an integer
-        downsample_value_widget.setMaxLength(self.width_input_file) # check that the downsample is not above the current size of the picture
+        # check that the downsample is an integer between 1 and the current pixel size
+        downsample_value_widget.setValidator(qtg.QIntValidator(1, self.width_input_file))
 
         sampling_rate_value_widget = qtw.QLineEdit()
-        #sampling_rate_value_widget.setValidator(qtw.QIntValidator())  # check that the sampling rate is an integer
+        # check that the sampling rate is an integer between 1 and 1000 HZ
+        sampling_rate_value_widget.setValidator(qtg.QIntValidator(1, 1000))
 
         # create the 'base' widget on which all the other widgets will be
         central_QWidget = qtw.QWidget()
