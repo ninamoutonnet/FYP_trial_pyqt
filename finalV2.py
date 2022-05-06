@@ -197,6 +197,14 @@ class MainWindow(qtw.QWidget):
             shortcut=qtg.QKeySequence('Ctrl+p')
         )
 
+        # create the text widgets for the entry of the downsampling factor and sampling rate
+        downsample_value_widget = qtw.QLineEdit()
+        #downsample_value_widget.setValidator(qtw.QIntValidator())  # check that the downsample is an integer
+        downsample_value_widget.setMaxLength(self.width_input_file) # check that the downsample is not above the current size of the picture
+
+        sampling_rate_value_widget = qtw.QLineEdit()
+        #sampling_rate_value_widget.setValidator(qtw.QIntValidator())  # check that the sampling rate is an integer
+
         # create the 'base' widget on which all the other widgets will be
         central_QWidget = qtw.QWidget()
 
@@ -210,6 +218,41 @@ class MainWindow(qtw.QWidget):
         layout_2.addWidget(self.stackViewer)
         right_layout = qtw.QVBoxLayout()
         layout_2.addLayout(right_layout)
+
+        layout3 = qtw.QHBoxLayout()
+        metadata_widget = qtw.QWidget()
+        metadata_widget.setLayout(layout3)
+        # titles
+        title_layout = qtw.QVBoxLayout()
+        layout3.addLayout(title_layout)
+        title_layout.addWidget(l1)
+        title_layout.addWidget(l2)
+        title_layout.addWidget(l3)
+        title_layout.addWidget(l4)
+        # Variables
+        variable_layout = qtw.QFormLayout()
+        layout3.addLayout(variable_layout)
+        variable_layout.addRow('Downsampling value', downsample_value_widget)
+        variable_layout.addRow('Acquisition rate in Hz', sampling_rate_value_widget)
+        right_layout.addWidget(metadata_widget)
+
+        simple_processing_widget = qtw.QGroupBox('Quick overview')
+        right_layout.addWidget(simple_processing_widget)
+        simple_processing_layout = qtw.QHBoxLayout()
+        simple_processing_widget.setLayout(simple_processing_layout)
+        simple_processing_layout.addWidget(button_pixel_intensity_var)
+        simple_processing_layout.addWidget(button)
+
+        complex_processing_widget = qtw.QGroupBox('Cell segmentation')
+        right_layout.addWidget(complex_processing_widget)
+        complex_processing_layout = qtw.QVBoxLayout()
+        complex_processing_widget.setLayout(complex_processing_layout)
+        complex_processing_layout.addWidget(button_Manual)
+        complex_processing_layout.addWidget(button_SVD)
+        complex_processing_layout.addWidget(button_ORPCA)
+        complex_processing_layout.addWidget(button_CNMFE)
+
+        '''
         right_layout.addWidget(l1)
         right_layout.addWidget(l2)
         right_layout.addWidget(l3)
@@ -229,7 +272,7 @@ class MainWindow(qtw.QWidget):
         complex_processing_layout.addWidget(button_Manual)
         complex_processing_layout.addWidget(button_SVD)
         complex_processing_layout.addWidget(button_ORPCA)
-        complex_processing_layout.addWidget(button_CNMFE)
+        complex_processing_layout.addWidget(button_CNMFE)'''
 
         complex_processing_widget.setSizePolicy(
             qtw.QSizePolicy.Preferred,

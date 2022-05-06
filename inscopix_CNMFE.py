@@ -210,8 +210,9 @@ for neuron_index in range(num_neurons):
 
     plt.show()
 
+'''
 plot_footprints_on_grid(footprints)
 
 plot_composite_fov(footprints, colormap='gist_rainbow')
 
-plot_all_traces(traces, spacing=5, height_per_row=0.5)
+plot_all_traces(traces, spacing=5, height_per_row=0.5)'''
