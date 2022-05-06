@@ -162,7 +162,9 @@ class MainWindow(qtw.QWidget):
         im = Image.open(self.filename)
         self.width_input_file, self.height_input_file = im.size
         l3.setText(f"Frame pixel size: {self.width_input_file}x{self.height_input_file}")
-        l4.setText('File path: ' + self.filename)
+        # strip the name of the file from the path
+        file_name = os.path.basename(os.path.normpath(self.filename))
+        l4.setText('File name: ' + file_name)
 
         # Create a button for each cell sorting algorithm
         button_CNMFE = qtw.QPushButton(
@@ -219,13 +221,14 @@ class MainWindow(qtw.QWidget):
         right_layout = qtw.QVBoxLayout()
         layout_2.addLayout(right_layout)
 
+        right_layout.addWidget(l1)
+
         layout3 = qtw.QHBoxLayout()
         metadata_widget = qtw.QWidget()
         metadata_widget.setLayout(layout3)
         # titles
         title_layout = qtw.QVBoxLayout()
         layout3.addLayout(title_layout)
-        title_layout.addWidget(l1)
         title_layout.addWidget(l2)
         title_layout.addWidget(l3)
         title_layout.addWidget(l4)
@@ -251,28 +254,6 @@ class MainWindow(qtw.QWidget):
         complex_processing_layout.addWidget(button_SVD)
         complex_processing_layout.addWidget(button_ORPCA)
         complex_processing_layout.addWidget(button_CNMFE)
-
-        '''
-        right_layout.addWidget(l1)
-        right_layout.addWidget(l2)
-        right_layout.addWidget(l3)
-        right_layout.addWidget(l4)
-
-        simple_processing_widget = qtw.QGroupBox('Quick overview')
-        right_layout.addWidget(simple_processing_widget)
-        simple_processing_layout = qtw.QHBoxLayout()
-        simple_processing_widget.setLayout(simple_processing_layout)
-        simple_processing_layout.addWidget(button_pixel_intensity_var)
-        simple_processing_layout.addWidget(button)
-
-        complex_processing_widget = qtw.QGroupBox('Cell segmentation')
-        right_layout.addWidget(complex_processing_widget)
-        complex_processing_layout = qtw.QVBoxLayout()
-        complex_processing_widget.setLayout(complex_processing_layout)
-        complex_processing_layout.addWidget(button_Manual)
-        complex_processing_layout.addWidget(button_SVD)
-        complex_processing_layout.addWidget(button_ORPCA)
-        complex_processing_layout.addWidget(button_CNMFE)'''
 
         complex_processing_widget.setSizePolicy(
             qtw.QSizePolicy.Preferred,
