@@ -1,26 +1,19 @@
-import cv2
 from PIL import Image
 from PIL import ImageSequence
 from PIL import TiffImagePlugin
 import numpy as np
 import os
-import matplotlib
-import hyperspy.api as hs
-# Importing the statistics module
-import statistics
 from matplotlib import pyplot as plt
 import tifffile
 
-
-# # # # # # #
-#  source   #  https://stackoverflow.com/questions/50702024/multi-page-tiff-resizing-python
-# # # # # # #
 
 def fluoMap(filename):
     # # # # # # #
     #  source   # https://stackoverflow.com/questions/50702024/multi-page-tiff-resizing-python
     # # # # # # #
 
+    # because the naming is automatic and you want a brand new file each time, ensure that no previous version
+    # named 'multipage_tif_resized.tif' exist.
     try:
         os.remove('multipage_tif_resized.tif')
     except:
@@ -30,7 +23,6 @@ def fluoMap(filename):
     RESIZED_STACK = 'multipage_tif_resized.tif'
     OUTFILE2 = 'average_tif_resized.tif'
 
-    # print('Resizing TIF pages')
     downsampling_factor = 1
     pages = []
     imagehandler = Image.open(INFILE)
@@ -93,7 +85,6 @@ def fluoMap(filename):
     # print('size of fluo output: ', heat_map_np_array.shape)
 
     return OUTFILE2
-
 
 
 def colourMap(filename):

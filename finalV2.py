@@ -1,4 +1,5 @@
 import sys
+
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtGui as qtg
@@ -8,6 +9,7 @@ from ImageProcessing import fluoMap
 import tifffile
 import os
 from PIL import Image
+import CNMFE
 
 
 class PixelTemporalVariation(qtw.QWidget):
@@ -18,14 +20,9 @@ class PixelTemporalVariation(qtw.QWidget):
         # QLabel
         label = qtw.QLabel('Pixel Variation 1D', self, margin=10)
 
-        # give the tiff file to the intensity function
-        # print('pixel x: ', x , 'and y: ', y, 'of file: ', filename)
-
         # Read the image from the TIFF file as numpy array:
         imfile = tifffile.imread(filename)
-        # print('shape: ', imfile.shape)
         extracted = imfile[:, x, y]
-        # print('shape: ', extracted.shape)
 
         graphWidget = pg.PlotWidget()
         pen = pg.mkPen(color=(255, 0, 0), width=5)
@@ -36,7 +33,6 @@ class PixelTemporalVariation(qtw.QWidget):
         styles = {'color': 'b', 'font-size': '20px'}
         graphWidget.setLabel('left', 'Intensity normalised by the average intensity', **styles)
         graphWidget.setLabel('bottom', 'Frame number', **styles)
-
 
         # Add widget objects to a layout
         layout = qtw.QVBoxLayout()
@@ -51,6 +47,7 @@ class PixelTemporalVariation(qtw.QWidget):
 class FluorescenceIntensityMap(qtw.QWidget):
 
     def __init__(self, filename):
+
         '''Main Window constructor'''
         super().__init__()
         #  get the filname/path of the original tiff stack to use when looking at individual pixel intensity
@@ -200,13 +197,13 @@ class MainWindow(qtw.QWidget):
         )
 
         # create the text widgets for the entry of the downsampling factor and sampling rate
-        downsample_value_widget = qtw.QLineEdit()
+        self.downsample_value_widget = qtw.QLineEdit()
         # check that the downsample is an integer between 1 and the current pixel size
-        downsample_value_widget.setValidator(qtg.QIntValidator(1, self.width_input_file))
+        self.downsample_value_widget.setValidator(qtg.QIntValidator(1, int(self.width_input_file)))
 
-        sampling_rate_value_widget = qtw.QLineEdit()
+        self.sampling_rate_value_widget = qtw.QLineEdit()
         # check that the sampling rate is an integer between 1 and 1000 HZ
-        sampling_rate_value_widget.setValidator(qtg.QIntValidator(1, 1000))
+        self.sampling_rate_value_widget.setValidator(qtg.QIntValidator(1, 1000))
 
         # create the 'base' widget on which all the other widgets will be
         central_QWidget = qtw.QWidget()
@@ -236,11 +233,12 @@ class MainWindow(qtw.QWidget):
         # Variables
         variable_layout = qtw.QFormLayout()
         layout3.addLayout(variable_layout)
-        variable_layout.addRow('Downsampling value', downsample_value_widget)
-        variable_layout.addRow('Acquisition rate in Hz', sampling_rate_value_widget)
+        variable_layout.addRow('Downsampling value', self.downsample_value_widget)
+        variable_layout.addRow('Acquisition rate in Hz', self.sampling_rate_value_widget)
         right_layout.addWidget(metadata_widget)
 
         simple_processing_widget = qtw.QGroupBox('Quick overview')
+        simple_processing_widget.setFont(qtg.QFont('Arial', 12, weight=qtg.QFont.Bold))
         right_layout.addWidget(simple_processing_widget)
         simple_processing_layout = qtw.QHBoxLayout()
         simple_processing_widget.setLayout(simple_processing_layout)
@@ -248,6 +246,7 @@ class MainWindow(qtw.QWidget):
         simple_processing_layout.addWidget(button)
 
         complex_processing_widget = qtw.QGroupBox('Cell segmentation')
+        complex_processing_widget.setFont(qtg.QFont('Arial', 12, weight=qtg.QFont.Bold))
         right_layout.addWidget(complex_processing_widget)
         complex_processing_layout = qtw.QVBoxLayout()
         complex_processing_widget.setLayout(complex_processing_layout)
@@ -288,8 +287,26 @@ class MainWindow(qtw.QWidget):
         button.clicked.connect(self.windowFluo)
         #  If the button is pressed, open a new window
         button_pixel_intensity_var.clicked.connect(self.WindowIntensityVariation)
+        #  If the for CNMFE is pressed, open a new window
+        button_CNMFE.clicked.connect(self.CNMFE_instance)
 
-    def GetPos(self, event):
+    def WindowIntensityVariation(self):
+        # When the mouse press occurs on the stackviewer, execute the getPosition function,
+        # which gets the position and plots the variation in intensity
+        self.stackViewer.viewer.mousePressEvent = self.getPosition
+
+    def windowFluo(self):
+        # first of all, extract the information from the downsampling and acquisition factor
+        downsample = int(self.downsample_value_widget.text())
+        acquisition_rate = int(self.sampling_rate_value_widget.text())
+
+        # second of all, check their validity. If the input is ok, generate the fluo map
+        if downsample > int(self.width_input_file) or downsample < 1:
+            print(f'The downsampling factor should be between 1 and {self.width_input_file}')
+        else:
+            self.w = FluorescenceIntensityMap(self.filename)
+
+    def getPosition(self, event):
         # get the viewer size
         viewer_size = (self.stackViewer.viewer.size().width(), self.stackViewer.viewer.size().height())
         print('viewer size ', viewer_size)
@@ -325,12 +342,10 @@ class MainWindow(qtw.QWidget):
         self.w = PixelTemporalVariation(round(x_coordinate), round(y_coordinate), self.filename)
         self.w.show()
 
-    def WindowIntensityVariation(self):
-        # Add event when the buttons are pressed -> get the position of interest
-        self.stackViewer.viewer.mousePressEvent = self.GetPos
+    def CNMFE_instance(self):
+        cnmfe_object = CNMFE.CNMFE_class('movie_downsampled.tif')
+        cnmfe_object.plot_summary()
 
-    def windowFluo(self):
-        self.w = FluorescenceIntensityMap(self.filename)
 
 
 if __name__ == '__main__':
