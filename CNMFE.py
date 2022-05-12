@@ -188,8 +188,7 @@ class CNMFE_class():
 
     def plot_summary(self):
 
-        for neuron_index in range(self.footprints.shape[1]):
-            print(neuron_index)
+        for neuron_index in range(self.footprints.shape[0]):
             # instantiate figure
             fig, axes = plt.subplots(1, 2, figsize=(10, 2), gridspec_kw={'width_ratios': [1, 3]})
 
@@ -203,7 +202,7 @@ class CNMFE_class():
             # temporal dynamics
             axes[1].set_title("Temporal trace")
             axes[1].plot(self.traces[neuron_index], label='neuron {0}'.format(neuron_index), color='blue')
-            axes[1].set_ylabel("dF over F")
+            axes[1].set_ylabel("dF over noise")
             axes[1].set_xlabel("frame number")
 
             plt.suptitle(

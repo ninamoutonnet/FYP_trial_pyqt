@@ -46,7 +46,7 @@ class PixelTemporalVariation(qtw.QWidget):
 
 class FluorescenceIntensityMap(qtw.QWidget):
 
-    def __init__(self, filename):
+    def __init__(self, filename, downsample_factor):
 
         '''Main Window constructor'''
         super().__init__()
@@ -56,6 +56,8 @@ class FluorescenceIntensityMap(qtw.QWidget):
         #  start UI code
         # QLabel
         label = qtw.QLabel(filename, self, margin=10)
+
+        # get a local file that is downsampled according to the downsampling factor
 
         # give the tiff file to the intensity function
         self.fluo_output = fluoMap(filename)
@@ -297,14 +299,27 @@ class MainWindow(qtw.QWidget):
 
     def windowFluo(self):
         # first of all, extract the information from the downsampling and acquisition factor
-        downsample = int(self.downsample_value_widget.text())
-        acquisition_rate = int(self.sampling_rate_value_widget.text())
+        downsample = self.downsample_value_widget.text()
+        # in case the field is not filled, the default value if 1
+        if downsample == '':
+            downsample = 1
+        else:
+            downsample = int(downsample)
 
-        # second of all, check their validity. If the input is ok, generate the fluo map
+        acquisition_rate = self.sampling_rate_value_widget.text()
+        if acquisition_rate == '':
+            acquisition_rate = 0
+        else:
+            acquisition_rate = int(acquisition_rate)
+
+        # second of all, check their validity. If the input is ok, generate the fluorescence variation map
         if downsample > int(self.width_input_file) or downsample < 1:
             print(f'The downsampling factor should be between 1 and {self.width_input_file}')
+        # check that the division of the width AND heigth by the downsampling factor is an integer.
+        if int(self.width_input_file)/downsample is not int or int(self.height_input_file)/downsample is not int :
+            print(f'The width and height of the tiff file should be a multiple of the downsampling factor')
         else:
-            self.w = FluorescenceIntensityMap(self.filename)
+            self.w = FluorescenceIntensityMap(self.filename, downsample)
 
     def getPosition(self, event):
         # get the viewer size
@@ -343,7 +358,15 @@ class MainWindow(qtw.QWidget):
         self.w.show()
 
     def CNMFE_instance(self):
+        # first of all, extract the information from the downsampling and acquisition factor
+        downsample = int(self.downsample_value_widget.text())
+        acquisition_rate = int(self.sampling_rate_value_widget.text())
+
+        #  create a new CNMFE object, give it the filename as input
+        #  IMPORTANT: THIS IS THE DOWNSAMPLED FILE!!!!
         cnmfe_object = CNMFE.CNMFE_class('movie_downsampled.tif')
+        #  here the function should automatically display the results, this should be 1 condensed QWindow
+        #  The QWindow should have a 'save' button, to enable the scientist to save the data.
         cnmfe_object.plot_summary()
 
 
