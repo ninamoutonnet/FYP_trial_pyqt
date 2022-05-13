@@ -7,6 +7,7 @@ from matplotlib import pyplot as plt
 import tifffile
 
 
+
 def fluoMap(filename, downsample_factor):
     # # # # # # #
     #  source   # https://stackoverflow.com/questions/50702024/multi-page-tiff-resizing-python
@@ -87,14 +88,3 @@ def fluoMap(filename, downsample_factor):
 
     return OUTFILE2
 
-
-def colourMap(filename):
-    try:
-        os.remove('multipage_tif_resized_COLOUR_MAP.tif')
-    except:
-        print("An exception occurred")
-
-    OUTFILE = "multipage_tif_resized_COLOUR_MAP.tif"
-    imfile = tifffile.imread('average_tif_resized.tif')
-
-    return

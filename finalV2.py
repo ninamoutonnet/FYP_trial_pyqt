@@ -1,5 +1,4 @@
 import sys
-
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtGui as qtg
@@ -9,6 +8,8 @@ from ImageProcessing import fluoMap
 import tifffile
 import os
 from PIL import Image
+from PIL import ImageSequence
+from PIL import TiffImagePlugin
 import CNMFE
 
 
@@ -368,15 +369,34 @@ class MainWindow(qtw.QWidget):
 
     def CNMFE_instance(self):
         # first of all, extract the information from the downsampling and acquisition factor
-        downsample = int(self.downsample_value_widget.text())
-        acquisition_rate = int(self.sampling_rate_value_widget.text())
+        downsample_factor = self.get_downsampling_value()
+        acquisition_rate = self.get_acquisition_rate()
 
-        #  create a new CNMFE object, give it the filename as input
-        #  IMPORTANT: THIS IS THE DOWNSAMPLED FILE!!!!
-        cnmfe_object = CNMFE.CNMFE_class('movie_downsampled.tif')
-        #  here the function should automatically display the results, this should be 1 condensed QWindow
-        #  The QWindow should have a 'save' button, to enable the scientist to save the data.
-        cnmfe_object.plot_summary()
+        if downsample_factor is not None:
+            # delete any existing version of the file you are about to over write
+            try:
+                os.remove('multipage_tif_resized.tif')
+                print('removed!')
+            except:
+                print("An exception occurred")
+
+            # reduce the size of the file
+            pages = []
+            imagehandler = Image.open(self.filename)
+            for page in ImageSequence.Iterator(imagehandler):
+                new_size = (int(page.size[0] / downsample_factor), int(page.size[1] / downsample_factor))
+                page = page.resize(new_size)
+                pages.append(page)
+            with TiffImagePlugin.AppendingTiffWriter('multipage_tif_resized.tif') as tf:
+                for page in pages:
+                    page.save(tf)
+                    tf.newFrame()
+
+            #  create a new CNMFE object, give it the resized filename as input
+            cnmfe_object = CNMFE.CNMFE_class('multipage_tif_resized.tif')
+            #  here the function should automatically display the results, this should be 1 condensed QWindow
+            #  The QWindow should have a 'save' button, to enable the scientist to save the data.
+            cnmfe_object.plot_summary()
 
 
 

@@ -31,7 +31,7 @@ class CNMFE_class():
             verbose=1
         )
 
-    def plot_footprints_on_grid(footprints, n_cols=10):
+    def plot_footprints_on_grid(self, footprints, n_cols=10):
         '''
         Plots all footprints on a grid of axes.
         User specifies number of desired columns
@@ -76,8 +76,8 @@ class CNMFE_class():
 
         plt.show()
 
+    def plot_composite_fov(self, footprints, colormap='gist_rainbow'):
 
-    def plot_composite_fov(footprints, colormap='gist_rainbow'):
         '''
         Plots all footprints on a single composite field of view.
 
@@ -134,8 +134,7 @@ class CNMFE_class():
         plt.show()
         return fig, ax
 
-
-    def plot_all_traces(traces, spacing=5, height_per_row=0.5, colormap='gist_rainbow'):
+    def plot_all_traces(self,traces, spacing=5, height_per_row=0.5, colormap='gist_rainbow'):
         '''
         Plots all traces on a single axis
 
@@ -154,7 +153,7 @@ class CNMFE_class():
                 ax = matplotlib axis handle
         '''
 
-        fig, ax = plt.subplots(figsize=(15, height_per_row * footprints.shape[0]))
+        fig, ax = plt.subplots(figsize=(15, height_per_row * self.footprints.shape[0]))
 
         num_cells = traces.shape[0]
         cell_names = ['cell ' + str(i).zfill(2) for i in range(num_cells)]
@@ -185,34 +184,43 @@ class CNMFE_class():
         plt.show()
         return fig, ax
 
-
     def plot_summary(self):
+        number_neurons_detected = self.footprints.shape[0]
+        print('NEURON NB: ', number_neurons_detected)
+        #fig, axes = plt.subplots(number_neurons_detected, 2,  gridspec_kw={'width_ratios': [1, 3]})
 
         for neuron_index in range(self.footprints.shape[0]):
             # instantiate figure
-            fig, axes = plt.subplots(1, 2, figsize=(10, 2), gridspec_kw={'width_ratios': [1, 3]})
+            #  fig, axes = plt.subplots(1, 2, figsize=(10, 2), gridspec_kw={'width_ratios': [1, 3]})
 
             # spatial footprint
-            axes[0].imshow(self.footprints[neuron_index])
-            axes[0].set_title("Spatial footprint")
-            axes[0].grid(False)
-            axes[0].set_xticks([])
-            axes[0].set_yticks([])
+            '''axes[neuron_index, 0].imshow(self.footprints[neuron_index-1])
+            axes[neuron_index, 0].set_title("Spatial footprint", fontsize=5)
+            axes[neuron_index, 0].grid(False)
+            axes[neuron_index, 0].set_xticks([])
+            axes[neuron_index, 0].set_yticks([])
 
             # temporal dynamics
-            axes[1].set_title("Temporal trace")
-            axes[1].plot(self.traces[neuron_index], label='neuron {0}'.format(neuron_index), color='blue')
-            axes[1].set_ylabel("dF over noise")
-            axes[1].set_xlabel("frame number")
+            axes[neuron_index, 1].set_title("Temporal trace", fontsize=5)
+            axes[neuron_index, 1].plot(self.traces[neuron_index]-1, label='neuron {0}'.format(neuron_index), color='blue')
+            axes[neuron_index, 1].set_ylabel("dF over noise", fontsize=5)
+            axes[neuron_index, 1].set_xlabel("frame number", fontsize=5)
+            axes[neuron_index, 1].grid()'''
 
-            plt.suptitle(
-                'cell {0}:'.format(neuron_index),
-                x=0.08,
-                y=0.55,
-                fontsize=14
-            )
+            ax1 = plt.subplot2grid((number_neurons_detected, 4), (neuron_index, 0), colspan=1)
+            ax2 = plt.subplot2grid((number_neurons_detected, 4), (neuron_index, 1), colspan=3)
 
-            plt.show()
+            ax1.imshow(self.footprints[neuron_index-1])
+            ax1.set_title("Spatial footprint", fontsize=5)
+
+            ax2.plot(self.traces[neuron_index]-1, label='neuron {0}'.format(neuron_index), color='blue')
+            ax2.set_title("Temporal trace", fontsize=5)
+            ax2.set_ylabel("dF over noise", fontsize=5)
+            ax2.set_xlabel("frame number", fontsize=5)
+            ax2.grid()
+
+        plt.tight_layout()
+        plt.show()
 
     '''
     plot_footprints_on_grid(footprints)
