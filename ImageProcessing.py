@@ -7,7 +7,7 @@ from matplotlib import pyplot as plt
 import tifffile
 
 
-def fluoMap(filename):
+def fluoMap(filename, downsample_factor):
     # # # # # # #
     #  source   # https://stackoverflow.com/questions/50702024/multi-page-tiff-resizing-python
     # # # # # # #
@@ -16,6 +16,7 @@ def fluoMap(filename):
     # named 'multipage_tif_resized.tif' exist.
     try:
         os.remove('multipage_tif_resized.tif')
+        print('removed!')
     except:
         print("An exception occurred")
 
@@ -23,11 +24,10 @@ def fluoMap(filename):
     RESIZED_STACK = 'multipage_tif_resized.tif'
     OUTFILE2 = 'average_tif_resized.tif'
 
-    downsampling_factor = 1
     pages = []
     imagehandler = Image.open(INFILE)
     for page in ImageSequence.Iterator(imagehandler):
-        new_size = (int(page.size[0] / downsampling_factor), int(page.size[1] / downsampling_factor))
+        new_size = (int(page.size[0] / downsample_factor), int(page.size[1] / downsample_factor))
         page = page.resize(new_size)
         pages.append(page)
     #print('Writing multipage TIF: ', pages[0])

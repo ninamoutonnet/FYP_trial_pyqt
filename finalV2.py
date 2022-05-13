@@ -57,10 +57,8 @@ class FluorescenceIntensityMap(qtw.QWidget):
         # QLabel
         label = qtw.QLabel(filename, self, margin=10)
 
-        # get a local file that is downsampled according to the downsampling factor
-
         # give the tiff file to the intensity function
-        self.fluo_output = fluoMap(filename)
+        self.fluo_output = fluoMap(filename, downsample_factor)
         self.stackViewer = MultiPageTIFFViewerQt()
         # As this next command has no argument, the files will pop up and the
         # user will be asked to get the tiff stack to open
@@ -308,7 +306,7 @@ class MainWindow(qtw.QWidget):
 
         acquisition_rate = self.sampling_rate_value_widget.text()
         if acquisition_rate == '':
-            acquisition_rate = 0
+            acquisition_rate = 50  # in case the field is not filled, the default value if 50 Hz
         else:
             acquisition_rate = int(acquisition_rate)
 
@@ -316,7 +314,7 @@ class MainWindow(qtw.QWidget):
         if downsample > int(self.width_input_file) or downsample < 1:
             print(f'The downsampling factor should be between 1 and {self.width_input_file}')
         # check that the division of the width AND heigth by the downsampling factor is an integer.
-        if int(self.width_input_file)/downsample is not int or int(self.height_input_file)/downsample is not int :
+        if (int(self.width_input_file) % int(downsample) != 0) or (int(self.height_input_file) % int(downsample) != 0):
             print(f'The width and height of the tiff file should be a multiple of the downsampling factor')
         else:
             self.w = FluorescenceIntensityMap(self.filename, downsample)
