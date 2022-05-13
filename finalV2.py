@@ -310,6 +310,15 @@ class MainWindow(qtw.QWidget):
         else:
             return downsample
 
+    def get_acquisition_rate(self):
+        acquisition_rate = self.sampling_rate_value_widget.text()
+        if acquisition_rate == '':
+            acquisition_rate = 50  # in case the field is not filled, the default value if 50 Hz
+        else:
+            acquisition_rate = int(acquisition_rate)
+
+        return acquisition_rate
+
     def WindowIntensityVariation(self):
         # When the mouse press occurs on the stackviewer, execute the getPosition function,
         # which gets the position and plots the variation in intensity
@@ -317,17 +326,9 @@ class MainWindow(qtw.QWidget):
 
     def windowFluo(self):
 
-        acquisition_rate = self.sampling_rate_value_widget.text()
-        if acquisition_rate == '':
-            acquisition_rate = 50  # in case the field is not filled, the default value if 50 Hz
-        else:
-            acquisition_rate = int(acquisition_rate)
-
         downsample = self.get_downsampling_value()
         if downsample is not None:
             self.w = FluorescenceIntensityMap(self.filename, downsample)
-
-
 
     def getPosition(self, event):
         # get the viewer size
