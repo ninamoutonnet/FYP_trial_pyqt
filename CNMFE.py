@@ -1,3 +1,6 @@
+import os
+import shutil
+
 import inscopix_cnmfe
 import numpy as np
 import matplotlib.pyplot as plt
@@ -30,6 +33,36 @@ class CNMFE_class():
             deconvolve=0,
             verbose=1
         )
+
+
+        # save the footprints and temporal traces of each neurons as a png in a dedicated folder
+        # make the dedicated folder and if already exists, delete the previous one
+        dir = 'CNMFE_results_' #+str(filename)
+        if os.path.exists(dir):
+            shutil.rmtree(dir)
+        os.makedirs(dir)
+
+        for neuron_index in range(self.footprints.shape[0]):
+            fig, axes = plt.subplots(1, 2, figsize=(10, 2), gridspec_kw={'width_ratios': [1, 3]})
+            # allows to not display the individual ones
+            plt.close(fig)
+
+            # spatial footprint
+            axes[0].imshow(self.footprints[neuron_index - 1])
+            axes[0].set_title("Spatial footprint", fontsize=5)
+            axes[0].grid(False)
+            axes[0].set_xticks([])
+            axes[0].set_yticks([])
+
+            # temporal dynamics
+            axes[1].set_title("Temporal trace", fontsize=5)
+            axes[1].plot(self.traces[neuron_index] - 1, label='neuron {0}'.format(neuron_index), color='blue')
+            axes[1].set_ylabel("dF over noise", fontsize=5)
+            axes[1].set_xlabel("frame number", fontsize=5)
+            axes[1].grid()
+
+            name = dir + '/CNMFE_results_' + str(neuron_index)
+            plt.savefig(name)
 
     def plot_footprints_on_grid(self, footprints, n_cols=10):
         '''
@@ -187,44 +220,21 @@ class CNMFE_class():
     def plot_summary(self):
         number_neurons_detected = self.footprints.shape[0]
         print('NEURON NB: ', number_neurons_detected)
-        #fig, axes = plt.subplots(number_neurons_detected, 2,  gridspec_kw={'width_ratios': [1, 3]})
 
         for neuron_index in range(self.footprints.shape[0]):
-            # instantiate figure
-            #  fig, axes = plt.subplots(1, 2, figsize=(10, 2), gridspec_kw={'width_ratios': [1, 3]})
-
-            # spatial footprint
-            '''axes[neuron_index, 0].imshow(self.footprints[neuron_index-1])
-            axes[neuron_index, 0].set_title("Spatial footprint", fontsize=5)
-            axes[neuron_index, 0].grid(False)
-            axes[neuron_index, 0].set_xticks([])
-            axes[neuron_index, 0].set_yticks([])
-
-            # temporal dynamics
-            axes[neuron_index, 1].set_title("Temporal trace", fontsize=5)
-            axes[neuron_index, 1].plot(self.traces[neuron_index]-1, label='neuron {0}'.format(neuron_index), color='blue')
-            axes[neuron_index, 1].set_ylabel("dF over noise", fontsize=5)
-            axes[neuron_index, 1].set_xlabel("frame number", fontsize=5)
-            axes[neuron_index, 1].grid()'''
 
             ax1 = plt.subplot2grid((number_neurons_detected, 4), (neuron_index, 0), colspan=1)
             ax2 = plt.subplot2grid((number_neurons_detected, 4), (neuron_index, 1), colspan=3)
 
             ax1.imshow(self.footprints[neuron_index-1])
-            ax1.set_title("Spatial footprint", fontsize=5)
+            ax1.set_title("Spatial footprint", fontsize=12)
 
             ax2.plot(self.traces[neuron_index]-1, label='neuron {0}'.format(neuron_index), color='blue')
-            ax2.set_title("Temporal trace", fontsize=5)
-            ax2.set_ylabel("dF over noise", fontsize=5)
-            ax2.set_xlabel("frame number", fontsize=5)
+            ax2.set_title("Temporal trace", fontsize=12)
+            ax2.set_ylabel("dF over noise", fontsize=12)
+            ax2.set_xlabel("frame number", fontsize=12)
             ax2.grid()
 
         plt.tight_layout()
         plt.show()
 
-    '''
-    plot_footprints_on_grid(footprints)
-    
-    plot_composite_fov(footprints, colormap='gist_rainbow')
-    
-    plot_all_traces(traces, spacing=5, height_per_row=0.5)'''
