@@ -16,6 +16,7 @@ def fluoMap(filename, downsample_factor):
     # named 'multipage_tif_resized.tif' exist.
     try:
         os.remove('multipage_tif_resized.tif')
+        os.remove('average_tif_resized.tif')
         print('removed!')
     except:
         print("An exception occurred")

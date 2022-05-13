@@ -290,13 +290,8 @@ class MainWindow(qtw.QWidget):
         #  If the for CNMFE is pressed, open a new window
         button_CNMFE.clicked.connect(self.CNMFE_instance)
 
-    def WindowIntensityVariation(self):
-        # When the mouse press occurs on the stackviewer, execute the getPosition function,
-        # which gets the position and plots the variation in intensity
-        self.stackViewer.viewer.mousePressEvent = self.getPosition
-
-    def windowFluo(self):
-        # first of all, extract the information from the downsampling and acquisition factor
+    def get_downsampling_value(self):
+        # first of all, extract the information from the text box
         downsample = self.downsample_value_widget.text()
         # in case the field is not filled, the default value if 1
         if downsample == '':
@@ -304,20 +299,35 @@ class MainWindow(qtw.QWidget):
         else:
             downsample = int(downsample)
 
+        # second, check the validity. If the input is ok, generate the fluorescence variation map
+        if downsample > int(self.width_input_file) or downsample < 1:
+            print(f'The downsampling factor should be between 1 and {self.width_input_file}')
+            return None
+        # check that the division of the width AND heigth by the downsampling factor is an integer.
+        if (int(self.width_input_file) % int(downsample) != 0) or (int(self.height_input_file) % int(downsample) != 0):
+            print(f'The width and height of the tiff file should be a multiple of the downsampling factor')
+            return None
+        else:
+            return downsample
+
+    def WindowIntensityVariation(self):
+        # When the mouse press occurs on the stackviewer, execute the getPosition function,
+        # which gets the position and plots the variation in intensity
+        self.stackViewer.viewer.mousePressEvent = self.getPosition
+
+    def windowFluo(self):
+
         acquisition_rate = self.sampling_rate_value_widget.text()
         if acquisition_rate == '':
             acquisition_rate = 50  # in case the field is not filled, the default value if 50 Hz
         else:
             acquisition_rate = int(acquisition_rate)
 
-        # second of all, check their validity. If the input is ok, generate the fluorescence variation map
-        if downsample > int(self.width_input_file) or downsample < 1:
-            print(f'The downsampling factor should be between 1 and {self.width_input_file}')
-        # check that the division of the width AND heigth by the downsampling factor is an integer.
-        if (int(self.width_input_file) % int(downsample) != 0) or (int(self.height_input_file) % int(downsample) != 0):
-            print(f'The width and height of the tiff file should be a multiple of the downsampling factor')
-        else:
+        downsample = self.get_downsampling_value()
+        if downsample is not None:
             self.w = FluorescenceIntensityMap(self.filename, downsample)
+
+
 
     def getPosition(self, event):
         # get the viewer size
