@@ -112,13 +112,11 @@ class CNMFE_GUI(qtw.QWidget):
         self.filename = filename
 
         #  start UI code
-        # QLabel
-        label = qtw.QLabel('Parameters', self)
-
 
         # Create the text boxes to enter the parameters, use a QFormLayout widget
         variable_layout = qtw.QFormLayout()
         self.setLayout(variable_layout)
+        self.setWindowTitle('CNMF-E parameters')
 
         qtw.QToolTip.setFont(qtg.QFont('arial',20))
 
@@ -214,6 +212,7 @@ class CNMFE_GUI(qtw.QWidget):
         variable_layout.addWidget(button)
 
         #  end main UI code - Display the UI
+
         self.show()
 
         #  If the button is pressed, open a new window
