@@ -102,6 +102,99 @@ class FluorescenceIntensityMap(qtw.QWidget):
         self.stackViewer.viewer.mousePressEvent = self.GetPos
 
 
+class CNMFE_GUI(qtw.QWidget):
+
+    def __init__(self, filename, downsample_factor):
+
+        '''Main Window constructor'''
+        super().__init__()
+        #  get the filname/path of the original tiff stack to use when looking at individual pixel intensity
+        self.filename = filename
+
+        #  start UI code
+        # QLabel
+        label = qtw.QLabel('Parameters', self)
+
+
+        # Create the text boxes to enter the parameters, use a QFormLayout widget
+        variable_layout = qtw.QFormLayout()
+        self.setLayout(variable_layout)
+
+        qtw.QToolTip.setFont(qtg.QFont(15))
+        qtw.QToolTip.setStyleSheet('''QToolTip { 
+            background-color: #8ad4ff; 
+            color: black; 
+            border: #8ad4ff solid 1px
+            }''')
+
+        # create the text widgets for the entry of the downsampling factor and sampling rate
+        self.average_cell_diameter = qtw.QLineEdit()
+        label_average_cell_diameter = qtw.QLabel('Average cell diameter')
+        label_average_cell_diameter.setToolTip('The average cell diameter of a representative cell in pixels,  <b> default = 7 <b>')
+        variable_layout.addRow(label_average_cell_diameter, self.average_cell_diameter)
+
+        self.min_pixel_correlation = qtw.QLineEdit()
+        variable_layout.addRow('min_pixel_correlation', self.min_pixel_correlation)
+
+        self.min_peak_to_noise_ratio = qtw.QLineEdit()
+        variable_layout.addRow('min_peak_to_noise_ratio', self.min_peak_to_noise_ratio)
+
+        self.gaussian_kernel_size = qtw.QLineEdit()
+        variable_layout.addRow('gaussian_kernel_size', self.gaussian_kernel_size)
+
+        self.closing_kernel_size = qtw.QLineEdit()
+        variable_layout.addRow('closing_kernel_size', self.closing_kernel_size)
+
+        self.background_downsampling_factor = qtw.QLineEdit()
+        variable_layout.addRow('background_downsampling_factor', self.background_downsampling_factor)
+
+        self.ring_size_factor = qtw.QLineEdit()
+        variable_layout.addRow('ring_size_factor', self.ring_size_factor)
+
+        self.merge_threshold = qtw.QLineEdit()
+        variable_layout.addRow('merge_threshold', self.merge_threshold)
+
+        self.num_threads = qtw.QLineEdit()
+        variable_layout.addRow('num_threads', self.num_threads)
+
+        self.processing_mode = qtw.QLineEdit()
+        variable_layout.addRow('processing_mode', self.processing_mode)
+
+        self.patch_size = qtw.QLineEdit()
+        variable_layout.addRow('patch_size', self.patch_size)
+
+        self.patch_overlap = qtw.QLineEdit()
+        variable_layout.addRow('patch_overlap', self.patch_overlap)
+
+        self.deconvolve = qtw.QLineEdit()
+        variable_layout.addRow('deconvolve', self.deconvolve)
+
+        self.output_units = qtw.QLineEdit()
+        variable_layout.addRow('output_units', self.output_units)
+
+        self.output_filetype = qtw.QLineEdit()
+        variable_layout.addRow('output_filetype', self.output_filetype)
+
+        self.verbose = qtw.QLineEdit()
+        variable_layout.addRow('verbose', self.verbose)
+
+        # QPushButton
+        button = qtw.QPushButton(
+            "Run CNMFE",
+            self,
+            checkable=True,
+            checked=True,
+            shortcut=qtg.QKeySequence('Ctrl+p')
+        )
+        variable_layout.addWidget(button)
+
+        #  end main UI code - Display the UI
+        self.show()
+
+        #  If the button is pressed, open a new window
+        # button.clicked.connect(self.WindowIntensityVariation)
+
+
 class MainWindow(qtw.QWidget):
 
     def __init__(self):
@@ -289,7 +382,12 @@ class MainWindow(qtw.QWidget):
         #  If the button is pressed, open a new window
         button_pixel_intensity_var.clicked.connect(self.WindowIntensityVariation)
         #  If the for CNMFE is pressed, open a new window
-        button_CNMFE.clicked.connect(self.CNMFE_instance)
+        #        button_CNMFE.clicked.connect(self.CNMFE_instance)
+        button_CNMFE.clicked.connect(self.cnmfe_trial)
+
+    def cnmfe_trial(self):
+        self.i = CNMFE_GUI(self.filename, 2)
+        return
 
     def get_downsampling_value(self):
         # first of all, extract the information from the text box
@@ -397,7 +495,6 @@ class MainWindow(qtw.QWidget):
             #  here the function should automatically display the results, this should be 1 condensed QWindow
             #  The QWindow should have a 'save' button, to enable the scientist to save the data.
             cnmfe_object.plot_summary()
-
 
 
 if __name__ == '__main__':
