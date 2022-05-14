@@ -120,12 +120,7 @@ class CNMFE_GUI(qtw.QWidget):
         variable_layout = qtw.QFormLayout()
         self.setLayout(variable_layout)
 
-        qtw.QToolTip.setFont(qtg.QFont(15))
-        qtw.QToolTip.setStyleSheet('''QToolTip { 
-            background-color: #8ad4ff; 
-            color: black; 
-            border: #8ad4ff solid 1px
-            }''')
+        qtw.QToolTip.setFont(qtg.QFont('arial',20))
 
         # create the text widgets for the entry of the downsampling factor and sampling rate
         self.average_cell_diameter = qtw.QLineEdit()
@@ -134,49 +129,79 @@ class CNMFE_GUI(qtw.QWidget):
         variable_layout.addRow(label_average_cell_diameter, self.average_cell_diameter)
 
         self.min_pixel_correlation = qtw.QLineEdit()
-        variable_layout.addRow('min_pixel_correlation', self.min_pixel_correlation)
+        label_min_pixel_correlation = qtw.QLabel('Minimum pixel correlation')
+        label_min_pixel_correlation.setToolTip('The minimum correlation of a pixel with its immediate neighbors when searching for new cell centers,  <b> default = 0.8 <b>')
+        variable_layout.addRow(label_min_pixel_correlation, self.min_pixel_correlation)
 
         self.min_peak_to_noise_ratio = qtw.QLineEdit()
-        variable_layout.addRow('min_peak_to_noise_ratio', self.min_peak_to_noise_ratio)
+        label_min_peak_to_noise_ratio = qtw.QLabel('min_peak_to_noise_ratio')
+        label_min_peak_to_noise_ratio.setToolTip('The minimum peak-to-noise ratio of a pixel when searching for new cell centers,  <b> default = 10 <b>')
+        variable_layout.addRow(label_min_peak_to_noise_ratio, self.min_peak_to_noise_ratio)
 
         self.gaussian_kernel_size = qtw.QLineEdit()
-        variable_layout.addRow('gaussian_kernel_size', self.gaussian_kernel_size)
+        label_gaussian_kernel_size = qtw.QLabel('Gaussian kernel size')
+        label_gaussian_kernel_size.setToolTip('The width in pixels of the Gaussian kernel used for spatial filtering of the movie before cell initialization (automatically estimated when the value provided is smaller than 3),  <b> default = 0 <b>')
+        variable_layout.addRow(label_gaussian_kernel_size, self.gaussian_kernel_size)
 
         self.closing_kernel_size = qtw.QLineEdit()
-        variable_layout.addRow('closing_kernel_size', self.closing_kernel_size)
+        label_closing_kernel_size = qtw.QLabel('Closing kernel size')
+        label_closing_kernel_size.setToolTip('The size in pixels of the morphological closing kernel used for removing small disconnected components and connecting small cracks within individual cell footprints (automatically estimated when the value provided is smaller than 3),  <b> default = 0 <b>')
+        variable_layout.addRow(label_closing_kernel_size, self.closing_kernel_size)
 
         self.background_downsampling_factor = qtw.QLineEdit()
-        variable_layout.addRow('background_downsampling_factor', self.background_downsampling_factor)
+        label_background_downsampling_factor = qtw.QLabel('Background downsampling factor')
+        label_background_downsampling_factor.setToolTip('The spatial downsampling factor to use when estimating the background activity,  <b> default = 2 <b>')
+        variable_layout.addRow(label_background_downsampling_factor, self.background_downsampling_factor)
 
         self.ring_size_factor = qtw.QLineEdit()
-        variable_layout.addRow('ring_size_factor', self.ring_size_factor)
+        label_ring_size_factor = qtw.QLabel('Ring size factor')
+        label_ring_size_factor.setToolTip('The multiple of the average cell diameter to use for computing the radius of the ring model used for estimating the background activity,  <b> default = 1.4 <b>')
+        variable_layout.addRow(label_ring_size_factor, self.ring_size_factor)
 
         self.merge_threshold = qtw.QLineEdit()
-        variable_layout.addRow('merge_threshold', self.merge_threshold)
+        label_merge_threshold = qtw.QLabel('Merge threshold')
+        label_merge_threshold.setToolTip('The temporal correlation threshold for merging cells that are spatially close,  <b> default = 0.7 <b>')
+        variable_layout.addRow(label_merge_threshold, self.merge_threshold)
 
         self.num_threads = qtw.QLineEdit()
-        variable_layout.addRow('num_threads', self.num_threads)
+        label_num_threads = qtw.QLabel('Number of threads')
+        label_num_threads.setToolTip('The number of threads to use for processing	,  <b> default = 4 <b>')
+        variable_layout.addRow(label_num_threads, self.num_threads)
 
         self.processing_mode = qtw.QLineEdit()
-        variable_layout.addRow('processing_mode', self.processing_mode)
+        label_processing_mode = qtw.QLabel('Processing mode')
+        label_processing_mode.setToolTip('the processing mode to use to run CNMF-E (0: all in memory, 1: sequential patches, 2: parallel patches). All in memory: processes the entire field of view at once. Sequential patches: breaks the field of view into overlapping patches and processes them one at a time using the specified number of threads where parallelization is possible. Parallel patches: breaks the field of view into overlapping patches and processes them in parallel using a single thread for each.,  <b> default = 2 <b>')
+        variable_layout.addRow(label_processing_mode, self.processing_mode)
 
         self.patch_size = qtw.QLineEdit()
-        variable_layout.addRow('patch_size', self.patch_size)
+        label_patch_size = qtw.QLabel('Patch size')
+        label_patch_size.setToolTip('The side length of an individual square patch of the field of view in pixels,  <b> default = 80 <b>')
+        variable_layout.addRow(label_patch_size, self.patch_size)
 
         self.patch_overlap = qtw.QLineEdit()
-        variable_layout.addRow('patch_overlap', self.patch_overlap)
+        label_patch_overlap = qtw.QLabel('Patch overlap')
+        label_patch_overlap.setToolTip('The amount of overlap between adjacent patches in pixels,  <b> default = 20 <b>')
+        variable_layout.addRow(label_patch_overlap, self.patch_overlap)
 
         self.deconvolve = qtw.QLineEdit()
-        variable_layout.addRow('deconvolve', self.deconvolve)
+        label_deconvolve = qtw.QLabel('Deconvolve')
+        label_deconvolve.setToolTip('Specifies whether to deconvolve the final temporal traces (0: return raw traces, 1: return deconvolved traces),  <b> default = 0 <b>')
+        variable_layout.addRow(label_deconvolve, self.deconvolve)
 
         self.output_units = qtw.QLineEdit()
-        variable_layout.addRow('output_units', self.output_units)
+        label_output_units = qtw.QLabel('Output units')
+        label_output_units.setToolTip('The units of the output temporal traces (0: dF, 1: dF over noise). dF: temporal traces on the same scale of pixel intensity as the original movie. dF is calculated as the average fluorescence activity of all pixels in a cell, scaled so that each spatial footprint has a magnitude of 1. dF over noise: temporal traces divided by their respective estimated noise level. This can be interpreted similarly to a z-score, with the added benefit that the noise is a more robust measure of the variance in a temporal trace compared to the standard deviation.,  <b> default = 1 <b>')
+        variable_layout.addRow(label_output_units, self.output_units)
 
         self.output_filetype = qtw.QLineEdit()
-        variable_layout.addRow('output_filetype', self.output_filetype)
+        label_output_filetype = qtw.QLabel('Output filetype')
+        label_output_filetype.setToolTip('The file types into which the output will be saved (0: footprints saved to a tiff file and traces saved to a csv file, 1: output saved to a h5 file under the keys footprints and traces),  <b> default = 0 <b>')
+        variable_layout.addRow(label_output_filetype, self.output_filetype)
 
         self.verbose = qtw.QLineEdit()
-        variable_layout.addRow('verbose', self.verbose)
+        label_verbose = qtw.QLabel('Verbose')
+        label_verbose.setToolTip('To enable and disable verbose mode. When enabled, progress is displayed in the console. (0: disabled, 1: enabled),  <b> default = 0 <b>')
+        variable_layout.addRow(label_verbose, self.verbose)
 
         # QPushButton
         button = qtw.QPushButton(
