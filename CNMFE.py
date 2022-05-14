@@ -9,14 +9,14 @@ from matplotlib import cm
 
 class CNMFE_class():
 
-    def __init__(self, filename):
+    def __init__(self, filename, average_cell_diameter_IN, min_pixel_correlation_IN, min_peak_to_noise_ratio_IN, gaussian_kernel_size_IN, closing_kernel_size_IN, background_downsampling_factor_IN, ring_size_factor_IN, merge_threshold_IN, num_threads_IN, processing_mode_IN, patch_size_IN, patch_overlap_IN,  deconvolve_IN, output_units_IN, output_filetype_IN, verbose_IN):
 
         # perform the CNMFE algporithm and store the results in the footprints and traces variables.
         # the CNMFE_class object requires the filename if the tiff stack on which it performs the CNMFE
         self.footprints, self.traces = inscopix_cnmfe.run_cnmfe(
             input_movie_path=filename,
             output_dir_path='output',
-            output_filetype=0,
+            output_filetype=output_filetype_IN,
             average_cell_diameter=20,  # 7(default)->3, 15 -> 5, 20 -> 5
             min_pixel_correlation=0.8,
             min_peak_to_noise_ratio=10.0,
@@ -235,6 +235,5 @@ class CNMFE_class():
             ax2.set_xlabel("frame number", fontsize=12)
             ax2.grid()
 
-        plt.tight_layout()
         plt.show()
 
