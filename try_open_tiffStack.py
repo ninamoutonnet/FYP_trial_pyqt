@@ -29,7 +29,7 @@ if __name__ == '__main__':
     # With no arguments, loadImageStack() will popup
     # a file selection dialog. Optionally, you can
     # call loadImageStack(fileName) directly as well.
-    stackViewer.loadImageStackFromFile('im1.tif')
+    stackViewer.loadImageStackFromFile('im1.tiff')
 
     # Read the entire stack into memory.
     # For large stacks this can be time and memory hungry.

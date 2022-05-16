@@ -38,4 +38,4 @@ H.segmentations  # List of identified cells
 output = H.segmentations_to_list()  # Export list of cells (for Neurofinder)'''
 
 print(output)
-print(output.dtype)
+print(output.shape)
