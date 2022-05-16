@@ -2,6 +2,7 @@
 import hyperspy_gui_traitsui
 import hyperspy_gui_ipywidgets
 import matplotlib.pyplot
+import numpy as np
 from hyperspy.drawing import signal as sigdraw
 import tifffile
 import hyperspy.api as hs
@@ -61,7 +62,7 @@ hs.preferences.gui()
 
 downsampling = 8  # dividing factor, 4 yields a 512x512 if the input is 2048x2048
 
-filename = 'im1.tiff'
+filename = 's2a4d1_WF_1P_1x1_400mA_50Hz_func_500frames_4AP_1_MMStack.tif'
 
 with tifffile.Timer():
     stack = tifffile.imread(filename)[:, ::downsampling, ::downsampling].copy()
@@ -113,7 +114,7 @@ with tifffile.Timer():
 print('DONE')
 
 # Plot the "explained variance ratio" (scree plot) --> ONLY IN SVD AND PCA, not NMF
-_ = s.plot_explained_variance_ratio()
+#_ = s.plot_explained_variance_ratio()
 
 PCA_number = 9
 
@@ -165,15 +166,39 @@ for i in range(len(comp_ids)):
                                axes_manager=s.axes_manager,
                                calibrate=True, ax=ax,
                                cmap=matplotlib.cm.gray, comp_label='hi')'''
-
+'''
 f = matplotlib.pyplot.figure()
 ax = f.add_subplot(1, 1, 1)
 
 shape = s.axes_manager._signal_shape_in_array
-factors = to_numpy(factors[:, 1].reshape(shape))
+background = to_numpy(factors[:, 0].reshape(shape))
+first_pca = to_numpy(factors[:, 1].reshape(shape))
+second_pca = to_numpy(factors[:, 2].reshape(shape))
+difference = first_pca-background
+
 axes = s.axes_manager.signal_axes[::-1]
-im = ax.imshow(factors, cmap=matplotlib.cm.gray, interpolation='nearest', extent=None)
-matplotlib.pyplot.colorbar(im)
+im = ax.imshow(difference, cmap=matplotlib.cm.gray, interpolation='nearest', extent=None)
+matplotlib.pyplot.colorbar(im)'''
+
+number_to_keep = 5
+shape = s.axes_manager._signal_shape_in_array
+first_pca = to_numpy(factors[:, 1].reshape(shape))
+lower_bound = np.amin(first_pca)
+upper_bound = np.amax(first_pca)
+range_intensity = upper_bound-lower_bound
+threshold = 0.7*(range_intensity)+lower_bound
+print('thershold: ', threshold)
+
+shape = first_pca.shape
+first_pca_mask = np.zeros(shape)
+for i in range(256):
+    for j in range(256):
+        if first_pca[i,j] < threshold:
+            first_pca_mask[i,j] = 1
+
+matplotlib.pyplot.imshow(first_pca_mask, interpolation='nearest')
+matplotlib.pyplot.show()
+
 
 
 '''
@@ -184,4 +209,4 @@ sigdraw._plot_2D_component(factors=factors,
                                            cmap=matplotlib.cm.gray, comp_label='hi')'''
 
 
-matplotlib.pyplot.show()
+# matplotlib.pyplot.show()
