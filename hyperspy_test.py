@@ -154,7 +154,7 @@ comp_ids = 9
 #                                 cmap=plt.cm.gray, quiver_color='white',
 #                                 vector_scale=1,
 #                                 per_row=3, ax=None):
-
+'''
 comp_ids = range(comp_ids)
 f = matplotlib.pyplot.figure(figsize=(4 * 3, 3 * 3))
 
@@ -164,7 +164,24 @@ for i in range(len(comp_ids)):
                                idx=comp_ids[i],
                                axes_manager=s.axes_manager,
                                calibrate=True, ax=ax,
-                               cmap=matplotlib.cm.gray, comp_label='hi')
+                               cmap=matplotlib.cm.gray, comp_label='hi')'''
+
+f = matplotlib.pyplot.figure()
+ax = f.add_subplot(1, 1, 1)
+
+shape = s.axes_manager._signal_shape_in_array
+factors = to_numpy(factors[:, 1].reshape(shape))
+axes = s.axes_manager.signal_axes[::-1]
+im = ax.imshow(factors, cmap=matplotlib.cm.gray, interpolation='nearest', extent=None)
+matplotlib.pyplot.colorbar(im)
+
+
+'''
+sigdraw._plot_2D_component(factors=factors,
+                                           idx=0,
+                                           axes_manager=s.axes_manager,
+                                           calibrate=True, ax=ax,
+                                           cmap=matplotlib.cm.gray, comp_label='hi')'''
 
 
 matplotlib.pyplot.show()
