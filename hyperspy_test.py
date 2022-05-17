@@ -182,21 +182,27 @@ matplotlib.pyplot.colorbar(im)'''
 
 number_to_keep = 5
 shape = s.axes_manager._signal_shape_in_array
-first_pca = to_numpy(factors[:, 1].reshape(shape))
-lower_bound = np.amin(first_pca)
-upper_bound = np.amax(first_pca)
-range_intensity = upper_bound-lower_bound
-threshold = 0.7*(range_intensity)+lower_bound
-print('thershold: ', threshold)
+overall_pca_mask = np.ones(shape)
 
-shape = first_pca.shape
-first_pca_mask = np.zeros(shape)
-for i in range(256):
-    for j in range(256):
-        if first_pca[i,j] < threshold:
-            first_pca_mask[i,j] = 1
+for k in range(number_to_keep):
+    first_pca = to_numpy(factors[:, k].reshape(shape))
+    lower_bound = np.amin(first_pca)
+    upper_bound = np.amax(first_pca)
+    range_intensity = upper_bound - lower_bound
+    ################################################
+    #         MAKE THIS A SLIDER IN THE GUI        #
+    ################################################
+    threshold = 0.7*(range_intensity) + lower_bound
+    print('thershold: ', threshold)
+    shape2 = first_pca.shape
+    first_pca_mask = np.zeros(shape2)
+    for i in range(256):
+        for j in range(256):
+            if first_pca[i,j] < threshold:
+                first_pca_mask[i,j] = 1
+    overall_pca_mask = overall_pca_mask * first_pca_mask
 
-matplotlib.pyplot.imshow(first_pca_mask, interpolation='nearest')
+matplotlib.pyplot.imshow(overall_pca_mask, interpolation='nearest')
 matplotlib.pyplot.show()
 
 
