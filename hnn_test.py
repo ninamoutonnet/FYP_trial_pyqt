@@ -3,11 +3,12 @@ from hnccorr import HNCcorr, Movie, HNCcorrConfig
 from hnccorr.example import load_example_data
 import tifffile
 import numpy
+import matplotlib.pyplot as plt
 
 
 downsampling = 8  # dividing factor, 4 yields a 512x512 if the input is 2048x2048
 
-filename = 'im1.tiff'
+filename = 's2a4d1_WF_1P_1x1_400mA_50Hz_func_500frames_4AP_1_MMStack.tif'
 
 with tifffile.Timer():
     stack = tifffile.imread(filename)[:, ::downsampling, ::downsampling].copy()
@@ -35,7 +36,17 @@ H = HNCcorr.from_config()  # Initialize HNCcorr with default configuration
 H.segment(movie)    # perform the decomposition algorithm
 
 H.segmentations  # List of identified cells
-output = H.segmentations_to_list()  # Export list of cells (for Neurofinder)'''
+output = H.segmentations_to_list()  # Export list of cells (for Neurofinder),  Returns list[dict[tuple]]: List of cell coordinates.
 
-print(output)
-print(output.shape)
+
+for i in range(len(output)):
+    print(i)
+    zip(*output[i]['coordinates'])
+    plt.scatter(*zip(*output[i]['coordinates']))
+
+plt.ylim(0, 256)
+plt.xlim(0, 256)
+plt.xlabel('pixel')
+plt.ylabel('pixel')
+plt.title('Coordinates obtained using the cell extraction algorithm HNCcor')
+plt.show()

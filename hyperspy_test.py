@@ -1,7 +1,7 @@
 # Set the matplotlib backend
 import hyperspy_gui_traitsui
 import hyperspy_gui_ipywidgets
-import matplotlib.pyplot
+import matplotlib.pyplot as plt
 import numpy as np
 from hyperspy.drawing import signal as sigdraw
 import tifffile
@@ -110,9 +110,9 @@ with tifffile.Timer():
 PCA_number = 6
 
 # Plot the first four principle components (loadings and factors)
-image_decomposition_loadings = s.plot_decomposition_loadings(PCA_number)
+# image_decomposition_loadings = s.plot_decomposition_loadings(PCA_number)
 # image_decomposition_loadings.savefig("decomposition_loadings.png") # save as png
-image_decomposition_factors = s.plot_decomposition_factors(comp_ids = PCA_number)
+# image_decomposition_factors = s.plot_decomposition_factors(comp_ids = PCA_number)
 #print('type is: ', type(image_decomposition_factors))
 #print('type is: ', type(image_decomposition_factors.patch))
 
@@ -153,7 +153,7 @@ comp_ids = 9
 '''
 comp_ids = 9
 comp_ids = range(comp_ids)
-f = matplotlib.pyplot.figure(figsize=(4 * 3, 3 * 3))
+f = plt.figure(figsize=(4 * 3, 3 * 3))
 
 for i in range(len(comp_ids)):
     ax = f.add_subplot(3, 3, i + 1)
@@ -170,7 +170,7 @@ for i in range(len(comp_ids)):
 ################################################
 
 '''
-f = matplotlib.pyplot.figure()
+f = plt.figure()
 ax = f.add_subplot(1, 1, 1)
 
 shape = s.axes_manager._signal_shape_in_array
@@ -181,35 +181,47 @@ difference = first_pca-background
 
 axes = s.axes_manager.signal_axes[::-1]
 im = ax.imshow(difference, cmap=matplotlib.cm.gray, interpolation='nearest', extent=None)
-matplotlib.pyplot.colorbar(im)'''
+plt.colorbar(im)'''
 
 
 ################################################
 ###### MASK FOR THE FIRST PCA components #######
 ################################################
 
-number_to_keep = 6
+number_to_keep = 4
 shape = s.axes_manager._signal_shape_in_array
 overall_pca_mask = np.ones(shape)
+threshold = np.zeros((number_to_keep+1, 1))
 
-for k in range(number_to_keep+1): # the +1 removes the first component, which is the background
-    first_pca = to_numpy(factors[:, k].reshape(shape))
+for k in range(number_to_keep):
+    k = k+1
+    first_pca = to_numpy(factors[:, k].reshape(shape))  # k+1
     lower_bound = np.amin(first_pca)
     upper_bound = np.amax(first_pca)
     range_intensity = upper_bound - lower_bound
     ################################################
     #         MAKE THIS A SLIDER IN THE GUI        #
     ################################################
-    threshold = 0.55*(range_intensity) + lower_bound
-    print('thershold: ', threshold)
+    threshold[k] = 0.5 * (range_intensity) + lower_bound
+    print('thershold: ', threshold[k])
     shape2 = first_pca.shape
     first_pca_mask = np.zeros(shape2)
     for i in range(256):
         for j in range(256):
-            if first_pca[i,j] < threshold:
+            if first_pca[i,j] < threshold[k]:
                 first_pca_mask[i,j] = 1
     overall_pca_mask = overall_pca_mask * first_pca_mask
 
 overall_pca_mask = dilation(overall_pca_mask)
-matplotlib.pyplot.imshow(overall_pca_mask, interpolation='nearest', cmap=matplotlib.pyplot.gray())
-matplotlib.pyplot.show()
+plt.imshow(overall_pca_mask, interpolation='nearest', cmap=plt.gray())
+plt.title(f'Binary mask obtained after extracting the relevant data of the {number_to_keep} first factors of the PCA, excluding the 1st one')
+plt.ylabel('pixel')
+plt.xlabel('pixel')
+plt.show()
+
+plt.plot(threshold, 'go')
+plt.ylabel('Threshold value')
+plt.xlabel('Principal Component')
+plt.title('Plot of the threshold values as a function of the principal component number')
+plt.grid()
+plt.show()
