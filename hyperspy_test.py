@@ -10,6 +10,8 @@ import cv2  # OpenCV for fast interpolation
 from PIL import Image
 from hyperspy.exceptions import LazyCupyConversion
 import numpy
+from skimage.morphology import (erosion, dilation, closing, opening,
+                                area_closing, area_opening)
 import dask.array as da
 
 def is_cupy_array(array):
@@ -29,6 +31,7 @@ def is_cupy_array(array):
         return isinstance(array, cp.ndarray)
     except ImportError:
         return False
+
 
 def to_numpy(array):
     """
@@ -56,40 +59,34 @@ def to_numpy(array):
     return array
 
 
+def open_downsample_save_tiff(downsampling):
+    #downsampling = 8  # dividing factor, 4 yields a 512x512 if the input is 2048x2048
+    filename = 's2a4d1_WF_1P_1x1_400mA_50Hz_func_500frames_4AP_1_MMStack.tif'
+    with tifffile.Timer():
+        stack = tifffile.imread(filename)[:, ::downsampling, ::downsampling].copy()
 
+    with tifffile.Timer():
+        with tifffile.TiffFile(filename) as tif:
+            page = tif.pages[0]
+            shape = len(tif.pages), page.imagelength // downsampling, page.imagewidth // downsampling
+            stack = numpy.empty(shape, page.dtype)
+            for i, page in enumerate(tif.pages):
+                # stack[i] = page.asarray(out='memmap')[::downsampling, ::downsampling]
+                # better use interpolation instead:
+                stack[i] = cv2.resize(page.asarray(), dsize=(shape[2], shape[1]), interpolation=cv2.INTER_LINEAR)
+    print(stack.shape)
 
-hs.preferences.gui()
+    # save the downsampled numpy array to a tiff file
+    imlist = []
+    with tifffile.Timer():
+        for m in stack:
+            imlist.append(Image.fromarray(m))
 
-downsampling = 8  # dividing factor, 4 yields a 512x512 if the input is 2048x2048
+        imlist[0].save("test.tif", compression="tiff_deflate", save_all=True,
+                       append_images=imlist[1:])
 
-filename = 's2a4d1_WF_1P_1x1_400mA_50Hz_func_500frames_4AP_1_MMStack.tif'
-
-with tifffile.Timer():
-    stack = tifffile.imread(filename)[:, ::downsampling, ::downsampling].copy()
-
-with tifffile.Timer():
-    with tifffile.TiffFile(filename) as tif:
-        page = tif.pages[0]
-        shape = len(tif.pages), page.imagelength // downsampling, page.imagewidth // downsampling
-        stack = numpy.empty(shape, page.dtype)
-        for i, page in enumerate(tif.pages):
-            stack[i] = page.asarray(out='memmap')[::downsampling, ::downsampling]
-            # # better use interpolation instead:
-            # stack[i] = cv2.resize(
-            # page.asarray(),
-            # dsize=(shape[2], shape[1]),
-            # interpolation=cv2.INTER_LINEAR)
-
-print(stack.shape)
-
-# save the downsampled numpy array to a tiff file
-imlist = []
-with tifffile.Timer():
-    for m in stack:
-        imlist.append(Image.fromarray(m))
-
-    imlist[0].save("test.tif", compression="tiff_deflate", save_all=True,
-                   append_images=imlist[1:])
+# open the tiff file
+open_downsample_save_tiff(8)
 
 # Load the smaller tiff as s using the hyperspy library
 s = hs.load("test.tif")
@@ -97,34 +94,27 @@ s = hs.load("test.tif")
 # Perform a signal decomposition using SVD
 with tifffile.Timer():
     s.change_dtype('float32')
-    #  s.decomposition()  # 3.574203 s
-    #  s.decomposition(True, algorithm="NMF", output_dimension=9)  # 13.727829 s
-    #  s.decomposition(normalize_poissonian_noise=True) # 2.795001s
-    # s.decomposition(False, algorithm="MLPCA", output_dimension=9)  #
 
 with tifffile.Timer():
-    s.decomposition()
-    # s.decomposition(algorithm="ORPCA", output_dimension=9, method="MomentumSGD",
-# subspace_learning_rate=1.1, subspace_momentum=0.5) DOES NOT RUN
-    #s.decomposition(True, algorithm="NMF", output_dimension=9)
-    #    s.decomposition(algorithm="RPCA", output_dimension=3, lambda1=0.1)
-
+    # s.decomposition()
+    s.decomposition(algorithm="SVD", centre="navigation")
+    # s.decomposition(algorithm="ORPCA", output_dimension=9, method="MomentumSGD", subspace_learning_rate=1.1, subspace_momentum=0.5) DOES NOT RUN
+    # s.decomposition(True, algorithm="NMF", output_dimension=9)
+    # s.decomposition(algorithm="RPCA", output_dimension=3, lambda1=0.1)
     # s.decomposition(False, algorithm="MLPCA", output_dimension=9)  #
 
-print('DONE')
 
 # Plot the "explained variance ratio" (scree plot) --> ONLY IN SVD AND PCA, not NMF
 #_ = s.plot_explained_variance_ratio()
 
-PCA_number = 9
+PCA_number = 6
 
 # Plot the first four principle components (loadings and factors)
-#image_decomposition_loadings = s.plot_decomposition_loadings(PCA_number)
+image_decomposition_loadings = s.plot_decomposition_loadings(PCA_number)
 # image_decomposition_loadings.savefig("decomposition_loadings.png") # save as png
-#image_decomposition_factors = s.plot_decomposition_factors(comp_ids = PCA_number)
+image_decomposition_factors = s.plot_decomposition_factors(comp_ids = PCA_number)
 #print('type is: ', type(image_decomposition_factors))
 #print('type is: ', type(image_decomposition_factors.patch))
-#matplotlib.pyplot.show()
 
 ################################################
 ######           REPLICATION          ##########
@@ -132,11 +122,9 @@ PCA_number = 9
 
 # get the results of the decomposition
 factors = s.learning_results.factors
-print('factors_shape: ',factors.shape )
-
+print('factors_shape: ', factors.shape )
 # comp_ids = 9 = PCA_number
 comp_ids = 9
-
 
 # call self._plot_factors_or_pchars(factors,
 #                                             comp_ids=comp_ids,
@@ -155,7 +143,15 @@ comp_ids = 9
 #                                 cmap=plt.cm.gray, quiver_color='white',
 #                                 vector_scale=1,
 #                                 per_row=3, ax=None):
+
+
+################################################
+###### print the first 9 PCA components ########
+######         USES SIGDRAW             ########
+################################################
+
 '''
+comp_ids = 9
 comp_ids = range(comp_ids)
 f = matplotlib.pyplot.figure(figsize=(4 * 3, 3 * 3))
 
@@ -166,6 +162,13 @@ for i in range(len(comp_ids)):
                                axes_manager=s.axes_manager,
                                calibrate=True, ax=ax,
                                cmap=matplotlib.cm.gray, comp_label='hi')'''
+
+
+################################################
+###### print the first   PCA component  ########
+######     DOES NOT USE SIGDRAW         ########
+################################################
+
 '''
 f = matplotlib.pyplot.figure()
 ax = f.add_subplot(1, 1, 1)
@@ -180,11 +183,16 @@ axes = s.axes_manager.signal_axes[::-1]
 im = ax.imshow(difference, cmap=matplotlib.cm.gray, interpolation='nearest', extent=None)
 matplotlib.pyplot.colorbar(im)'''
 
-number_to_keep = 5
+
+################################################
+###### MASK FOR THE FIRST PCA components #######
+################################################
+
+number_to_keep = 6
 shape = s.axes_manager._signal_shape_in_array
 overall_pca_mask = np.ones(shape)
 
-for k in range(number_to_keep):
+for k in range(number_to_keep+1): # the +1 removes the first component, which is the background
     first_pca = to_numpy(factors[:, k].reshape(shape))
     lower_bound = np.amin(first_pca)
     upper_bound = np.amax(first_pca)
@@ -192,7 +200,7 @@ for k in range(number_to_keep):
     ################################################
     #         MAKE THIS A SLIDER IN THE GUI        #
     ################################################
-    threshold = 0.7*(range_intensity) + lower_bound
+    threshold = 0.55*(range_intensity) + lower_bound
     print('thershold: ', threshold)
     shape2 = first_pca.shape
     first_pca_mask = np.zeros(shape2)
@@ -202,17 +210,6 @@ for k in range(number_to_keep):
                 first_pca_mask[i,j] = 1
     overall_pca_mask = overall_pca_mask * first_pca_mask
 
-matplotlib.pyplot.imshow(overall_pca_mask, interpolation='nearest')
+overall_pca_mask = dilation(overall_pca_mask)
+matplotlib.pyplot.imshow(overall_pca_mask, interpolation='nearest', cmap=matplotlib.pyplot.gray())
 matplotlib.pyplot.show()
-
-
-
-'''
-sigdraw._plot_2D_component(factors=factors,
-                                           idx=0,
-                                           axes_manager=s.axes_manager,
-                                           calibrate=True, ax=ax,
-                                           cmap=matplotlib.cm.gray, comp_label='hi')'''
-
-
-# matplotlib.pyplot.show()
