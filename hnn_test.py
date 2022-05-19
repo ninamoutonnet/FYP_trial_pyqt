@@ -31,8 +31,8 @@ print(stack.dtype)
 
 movie = Movie('exp1', stack)
 
-# config = HNCcorrConfig(postprocessor_min_cell_size = 40, postprocessor_preferred_cell_size = 80,postprocessor_max_cell_size = 200, patch_size = 21)
-H = HNCcorr.from_config()  # Initialize HNCcorr with default configuration
+config = HNCcorrConfig(postprocessor_min_cell_size = 40, postprocessor_preferred_cell_size = 70,postprocessor_max_cell_size = 100, patch_size = 31)
+H = HNCcorr.from_config(config)  # Initialize HNCcorr with default configuration
 H.segment(movie)    # perform the decomposition algorithm
 
 H.segmentations  # List of identified cells

@@ -90,6 +90,7 @@ open_downsample_save_tiff(8)
 
 # Load the smaller tiff as s using the hyperspy library
 s = hs.load("test.tif")
+print(s)
 
 # Perform a signal decomposition using SVD
 with tifffile.Timer():
