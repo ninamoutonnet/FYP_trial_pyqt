@@ -459,8 +459,8 @@ class MainWindow(qtw.QWidget):
             shortcut=qtg.QKeySequence('Ctrl+p')
         )
 
-        button_SVD = qtw.QPushButton(
-            "SVD",
+        button_PCA = qtw.QPushButton(
+            "PCA",
             self,
             checkable=True,
             checked=True,
@@ -538,7 +538,7 @@ class MainWindow(qtw.QWidget):
         complex_processing_layout = qtw.QVBoxLayout()
         complex_processing_widget.setLayout(complex_processing_layout)
         complex_processing_layout.addWidget(button_Manual)
-        complex_processing_layout.addWidget(button_SVD)
+        complex_processing_layout.addWidget(button_PCA)
         complex_processing_layout.addWidget(button_ORPCA)
         complex_processing_layout.addWidget(button_CNMFE)
 
@@ -552,7 +552,7 @@ class MainWindow(qtw.QWidget):
             qtw.QSizePolicy.Preferred
         )
 
-        button_SVD.setSizePolicy(
+        button_PCA.setSizePolicy(
             qtw.QSizePolicy.Preferred,
             qtw.QSizePolicy.Preferred
         )
@@ -578,10 +578,30 @@ class MainWindow(qtw.QWidget):
         #        button_CNMFE.clicked.connect(self.CNMFE_instance)
         button_CNMFE.clicked.connect(self.cnmfe_trial)
 
+        button_PCA.clicked.connect(self.pca_trial)
+
+
+
+    def pca_trial(self):
+        # extract the info from the main GUI window
+        downsample_factor = self.get_downsampling_value()
+        # downsample the file and store it automatically as 'multipage_tif_resized.tif'
+        self.downsampling_tiff_stack(self, self.filename, downsample_factor)
+        # use that downsampled file to call the PCA/SVD
+        self.pca_window = PCA_GUI('multipage_tif_resized.tif')
+        return
+
     def cnmfe_trial(self):
         # extract the info from the main GUI window
         downsample_factor = self.get_downsampling_value()
+        # downsample the file and store it automatically as 'multipage_tif_resized.tif'
+        self.downsampling_tiff_stack(self, self.filename, downsample_factor)
+        # use that downsampled file to call the CNMFE
+        self.cnmf_window = CNMFE_GUI('multipage_tif_resized.tif')
 
+        return
+
+    def downsampling_tiff_stack(self, filename, downsample_factor):
         # delete any existing version of the file you are about to over write
         try:
             os.remove('multipage_tif_resized.tif')
@@ -599,9 +619,6 @@ class MainWindow(qtw.QWidget):
             for page in pages:
                 page.save(tf)
                 tf.newFrame()
-
-        self.cnmf_window = CNMFE_GUI('multipage_tif_resized.tif')
-        return
 
     def get_downsampling_value(self):
         # first of all, extract the information from the text box
@@ -679,37 +696,6 @@ class MainWindow(qtw.QWidget):
         self.w = PixelTemporalVariation(round(x_coordinate), round(y_coordinate), self.filename, self.get_acquisition_rate())
         self.w.show()
 
-    ''' 
-    def CNMFE_instance(self):
-        # first of all, extract the information from the downsampling and acquisition factor
-        downsample_factor = self.get_downsampling_value()
-        acquisition_rate = self.get_acquisition_rate()
-
-        if downsample_factor is not None:
-            # delete any existing version of the file you are about to over write
-            try:
-                os.remove('multipage_tif_resized.tif')
-                print('removed!')
-            except:
-                print("An exception occurred")
-
-            # reduce the size of the file
-            pages = []
-            imagehandler = Image.open(self.filename)
-            for page in ImageSequence.Iterator(imagehandler):
-                new_size = (int(page.size[0] / downsample_factor), int(page.size[1] / downsample_factor))
-                page = page.resize(new_size)
-                pages.append(page)
-            with TiffImagePlugin.AppendingTiffWriter('multipage_tif_resized.tif') as tf:
-                for page in pages:
-                    page.save(tf)
-                    tf.newFrame()
-
-            #  create a new CNMFE object, give it the resized filename as input
-            cnmfe_object = CNMFE.CNMFE_class('multipage_tif_resized.tif')
-            #  here the function should automatically display the results, this should be 1 condensed QWindow
-            #  The QWindow should have a 'save' button, to enable the scientist to save the data.
-            cnmfe_object.plot_summary()'''
 
 
 if __name__ == '__main__':
