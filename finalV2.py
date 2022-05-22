@@ -61,14 +61,16 @@ class FluorescenceIntensityMap(qtw.QWidget):
         # give the tiff file to the intensity function
         self.fluo_output = fluoMap(filename, downsample_factor)
         self.stackViewer = MultiPageTIFFViewerQt()
-        # As this next command has no argument, the files will pop up and the
-        # user will be asked to get the tiff stack to open
         self.stackViewer.loadImageStackFromFile(self.fluo_output)
+
+        im = Image.open(self.fluo_output)
+        self.width_input_file, self.height_input_file = im.size
+        print('new fluo output: ', self.height_input_file)
 
         # Create a button to see 1D intensity variation
         # QPushButton
         button = qtw.QPushButton(
-            "Normalised pixel temporal intensity variation",
+            "Pixel temporal traces",
             self,
             checkable=True,
             checked=True,
@@ -88,18 +90,46 @@ class FluorescenceIntensityMap(qtw.QWidget):
         #  If the button is pressed, open a new window
         button.clicked.connect(self.WindowIntensityVariation)
 
-    def GetPos(self, event):
-        # get the x pixel correction
+
+    def getPosition(self, event):
+        # get the viewer size
+        viewer_size = (self.stackViewer.viewer.size().width(), self.stackViewer.viewer.size().height())
+        # print('viewer size ', viewer_size)
+        # get the image size
+        image_size = (self.width_input_file, self.height_input_file)
+        # print('image size ', image_size)
+
         x = event.pos().x()
         y = event.pos().y()
-        print('x= ', x)
-        print('y= ', y)
-        self.w = PixelTemporalVariation(x, y, self.fluo_output) # self.filename)
+
+        # 3 possible scenarios; assume that the input is SQUARE
+        if viewer_size[0] > viewer_size[1]: # the width of the viewer is bigger than the height
+            # print('Width > height')
+            scaling_factor = image_size[1]/viewer_size[1]
+            x_offset = (viewer_size[0] - viewer_size[1])/2
+            y_coordinate = y*scaling_factor
+            x_coordinate = (x-x_offset)*scaling_factor
+
+        elif viewer_size[0] < viewer_size[1]:# the width of the viewer is smaller than the height
+            # print('height > width')
+            scaling_factor = image_size[0] / viewer_size[0]
+            y_offset = (viewer_size[1] - viewer_size[0]) / 2
+            y_coordinate = (y-y_offset) * scaling_factor
+            x_coordinate = x * scaling_factor
+
+        else:  # the width of the viewer  =  height
+            # print('Width = height')
+            scaling_factor = image_size[0] / viewer_size[0]
+            y_coordinate = y * scaling_factor
+            x_coordinate = x * scaling_factor
+
+        # print(f'x/y input,  {x}  {y} new coord:  {x_coordinate}  {y_coordinate}')
+        self.w = PixelTemporalVariation(round(x_coordinate), round(y_coordinate), self.filename)
         self.w.show()
 
     def WindowIntensityVariation(self):
         # Add event when the buttons are pressed -> get the position of interest
-        self.stackViewer.viewer.mousePressEvent = self.GetPos
+        self.stackViewer.viewer.mousePressEvent = self.getPosition
 
 
 class CNMFE_GUI(qtw.QWidget):
@@ -405,9 +435,11 @@ class MainWindow(qtw.QWidget):
         im = Image.open(self.filename)
         self.width_input_file, self.height_input_file = im.size
         l3.setText(f"Frame pixel size: {self.width_input_file}x{self.height_input_file}")
+
         # strip the name of the file from the path
         file_name = os.path.basename(os.path.normpath(self.filename))
         l4.setText('File name: ' + file_name)
+        self.filename_no_path = file_name
 
         # Create a button for each cell sorting algorithm
         button_CNMFE = qtw.QPushButton(
@@ -544,9 +576,8 @@ class MainWindow(qtw.QWidget):
         # delete any existing version of the file you are about to over write
         try:
             os.remove('multipage_tif_resized.tif')
-            print('removed!')
         except:
-            print("An exception occurred")
+            pass
 
         # reduce the size of the file
         pages = []
@@ -598,7 +629,6 @@ class MainWindow(qtw.QWidget):
         self.stackViewer.viewer.mousePressEvent = self.getPosition
 
     def windowFluo(self):
-
         downsample = self.get_downsampling_value()
         if downsample is not None:
             self.w = FluorescenceIntensityMap(self.filename, downsample)
@@ -606,36 +636,36 @@ class MainWindow(qtw.QWidget):
     def getPosition(self, event):
         # get the viewer size
         viewer_size = (self.stackViewer.viewer.size().width(), self.stackViewer.viewer.size().height())
-        print('viewer size ', viewer_size)
+        # print('viewer size ', viewer_size)
         # get the image size
         image_size = (self.width_input_file, self.height_input_file)
-        print('image size ', image_size)
+        # print('image size ', image_size)
 
         x = event.pos().x()
         y = event.pos().y()
 
         # 3 possible scenarios; assume that the input is SQUARE
         if viewer_size[0] > viewer_size[1]: # the width of the viewer is bigger than the height
-            print('Width > height')
+            # print('Width > height')
             scaling_factor = image_size[1]/viewer_size[1]
             x_offset = (viewer_size[0] - viewer_size[1])/2
             y_coordinate = y*scaling_factor
             x_coordinate = (x-x_offset)*scaling_factor
 
         elif viewer_size[0] < viewer_size[1]:# the width of the viewer is smaller than the height
-            print('height > width')
+            # print('height > width')
             scaling_factor = image_size[0] / viewer_size[0]
             y_offset = (viewer_size[1] - viewer_size[0]) / 2
             y_coordinate = (y-y_offset) * scaling_factor
             x_coordinate = x * scaling_factor
 
         else:  # the width of the viewer  =  height
-            print('Width = height')
+            # print('Width = height')
             scaling_factor = image_size[0] / viewer_size[0]
             y_coordinate = y * scaling_factor
             x_coordinate = x * scaling_factor
 
-        print(f'x/y input,  {x}  {y} new coord:  {x_coordinate}  {y_coordinate}')
+        # print(f'x/y input,  {x}  {y} new coord:  {x_coordinate}  {y_coordinate}')
         self.w = PixelTemporalVariation(round(x_coordinate), round(y_coordinate), self.filename)
         self.w.show()
 

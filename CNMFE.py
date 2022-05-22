@@ -1,6 +1,5 @@
 import os
 import shutil
-
 import inscopix_cnmfe
 import numpy as np
 import matplotlib.pyplot as plt

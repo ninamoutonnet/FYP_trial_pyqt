@@ -18,13 +18,12 @@ def fluoMap(filename, downsample_factor):
     try:
         os.remove('multipage_tif_resized.tif')
         os.remove('average_tif_resized.tif')
-        print('removed!')
     except:
-        print("An exception occurred")
+        pass
 
     INFILE = filename
     RESIZED_STACK = 'multipage_tif_resized.tif'
-    OUTFILE2 = 'average_tif_resized.tif'
+    OUTFILE = 'average_tif_resized.tif'
 
     pages = []
     imagehandler = Image.open(INFILE)
@@ -32,59 +31,29 @@ def fluoMap(filename, downsample_factor):
         new_size = (int(page.size[0] / downsample_factor), int(page.size[1] / downsample_factor))
         page = page.resize(new_size)
         pages.append(page)
-    #print('Writing multipage TIF: ', pages[0])
     with TiffImagePlugin.AppendingTiffWriter(RESIZED_STACK) as tf:
         for page in pages:
             page.save(tf)
             tf.newFrame()
 
-    '''infile = tifffile.imread(INFILE)
-    print('shape is: ', infile.shape)
-    infile.resize(200, 256, 256)
-    plt.gray()
-    plt.imshow(infile)
-    plt.show()
-    print(infile[0, 0, 0])'''
 
     # Now that you have resized the whole stack, start the processing
     # Read the image from the TIFF file as numpy array:
     imfile = tifffile.imread(RESIZED_STACK)
-    # image_array = imfile.astype('uint8')
-    # print('shape of 8 bit is: ', image_array.shape)
-    # plt.gray()
-    # plt.imshow(image_array[0])
-    # plt.show()
-
-    # print(imfile.dtype, image_array.dtype)
-    # print('max: ', np.amax(imfile), ' ', np.amax(image_array))
-    # print('min: ', np.amin(imfile), ' ', np.amin(image_array))
-
     # Take the mean, pixel per pixel of the whole image
-    OUTFILE2_NP = imfile.mean(axis=0)
+    mean_img = imfile.mean(axis=0)
     plt.gray()
-    #plt.imshow(OUTFILE2_NP)
-    #plt.show()
 
     # Create the np array that will be the map
     heat_map_np_array = np.copy(imfile)
-    # print(heat_map_np_array[1])
-    # print(OUTFILE2_NP)
-    # print((heat_map_np_array[1]-OUTFILE2_NP) / OUTFILE2_NP)
-    # print(np.amax((heat_map_np_array[1]-OUTFILE2_NP) / OUTFILE2_NP))
-    # print(np.amin((heat_map_np_array[1] - OUTFILE2_NP) / OUTFILE2_NP))
+
+    # value of darkness due to the microscope -> use the average of the first pixels in the top corner to do so
+    value_of_darkness = np.mean(imfile[1:5,1:5, 1:20])
 
     for i in range(imfile.shape[0]):
-        temp = (imfile[i] - OUTFILE2_NP) / OUTFILE2_NP
-        min = np.amin(temp)
-        max = np.amax(temp)
-        scaling_factor = (max - min) / 65535
-        print(min, '   ', max, '   ', scaling_factor, np.amin((temp - min)) / scaling_factor, ' ',
-              np.amax((temp - min)) / scaling_factor)
-        # heat_map_np_array[i] = (temp-min)/scaling_factor
-        heat_map_np_array[i] = abs(imfile[i] - OUTFILE2_NP)
+        heat_map_np_array[i] = abs(imfile[i] - mean_img - value_of_darkness)
 
-    tifffile.imwrite(OUTFILE2, heat_map_np_array, photometric='minisblack')
-    # print('size of fluo output: ', heat_map_np_array.shape)
+    tifffile.imwrite(OUTFILE, heat_map_np_array, photometric='minisblack')
 
-    return OUTFILE2
+    return OUTFILE
 
