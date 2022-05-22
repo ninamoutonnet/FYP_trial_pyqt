@@ -10,12 +10,13 @@ import os
 from PIL import Image
 from PIL import ImageSequence
 from PIL import TiffImagePlugin
+import numpy as np
 import CNMFE
 
 
 class PixelTemporalVariation(qtw.QWidget):
 
-    def __init__(self, x, y, filename):
+    def __init__(self, x, y, filename, acquisition_rate):
         super().__init__()
         #  start UI code
         # QLabel
@@ -23,17 +24,26 @@ class PixelTemporalVariation(qtw.QWidget):
 
         # Read the image from the TIFF file as numpy array:
         imfile = tifffile.imread(filename)
-        extracted = imfile[:, x, y]
+        # value of the darkness due to the microscope is the average of the first 5x5 pixel
+        # square at the top of the image over the whole stack
+
+        value_of_darkness = np.mean(imfile[:, 1:5, 1:5])
+        extracted_temporal_trace = imfile[:, x, y]
+        f_0 = np.mean(imfile)
+        extracted_temporal_trace = (extracted_temporal_trace - f_0)/ (f_0 - value_of_darkness)
+
+        # using the acquisition rate, tranform the x axis from frame numbet to seconds
+        timescale = np.arange(0, imfile.shape[0]/acquisition_rate, 1/acquisition_rate)
 
         graphWidget = pg.PlotWidget()
-        pen = pg.mkPen(color=(255, 0, 0), width=5)
+        pen = pg.mkPen(color=(255, 0, 0), width=1)
         graphWidget.setBackground('w')
-        graphWidget.plot(extracted, pen=pen)
+        graphWidget.plot(timescale, extracted_temporal_trace, pen=pen)
         graphWidget.showGrid(x=True, y=True)
-        graphWidget.setTitle("Temporal Trace of ("+str(x)+","+str(y)+")", size="30pt")
+        graphWidget.setTitle("Temporal Trace of ("+str(x)+","+str(y)+f") of {filename}", size="30pt")
         styles = {'color': 'b', 'font-size': '20px'}
-        graphWidget.setLabel('left', 'Intensity normalised by the average intensity', **styles)
-        graphWidget.setLabel('bottom', 'Frame number', **styles)
+        graphWidget.setLabel('left', 'delta F / F', **styles)
+        graphWidget.setLabel('bottom', 'time, s', **styles)
 
         # Add widget objects to a layout
         layout = qtw.QVBoxLayout()
@@ -47,12 +57,13 @@ class PixelTemporalVariation(qtw.QWidget):
 
 class FluorescenceIntensityMap(qtw.QWidget):
 
-    def __init__(self, filename, downsample_factor):
+    def __init__(self, filename, downsample_factor, acquisition_rate):
 
         '''Main Window constructor'''
         super().__init__()
         #  get the filname/path of the original tiff stack to use when looking at individual pixel intensity
         self.filename = filename
+        self.acquisition_rate = acquisition_rate
 
         #  start UI code
         # QLabel
@@ -65,7 +76,6 @@ class FluorescenceIntensityMap(qtw.QWidget):
 
         im = Image.open(self.fluo_output)
         self.width_input_file, self.height_input_file = im.size
-        print('new fluo output: ', self.height_input_file)
 
         # Create a button to see 1D intensity variation
         # QPushButton
@@ -123,8 +133,7 @@ class FluorescenceIntensityMap(qtw.QWidget):
             y_coordinate = y * scaling_factor
             x_coordinate = x * scaling_factor
 
-        # print(f'x/y input,  {x}  {y} new coord:  {x_coordinate}  {y_coordinate}')
-        self.w = PixelTemporalVariation(round(x_coordinate), round(y_coordinate), self.filename)
+        self.w = PixelTemporalVariation(round(x_coordinate), round(y_coordinate), 'multipage_tif_resized.tif', self.acquisition_rate)
         self.w.show()
 
     def WindowIntensityVariation(self):
@@ -630,8 +639,9 @@ class MainWindow(qtw.QWidget):
 
     def windowFluo(self):
         downsample = self.get_downsampling_value()
+        acquisition_rate = self.get_acquisition_rate()
         if downsample is not None:
-            self.w = FluorescenceIntensityMap(self.filename, downsample)
+            self.w = FluorescenceIntensityMap(self.filename, downsample, acquisition_rate)
 
     def getPosition(self, event):
         # get the viewer size
@@ -666,7 +676,7 @@ class MainWindow(qtw.QWidget):
             x_coordinate = x * scaling_factor
 
         # print(f'x/y input,  {x}  {y} new coord:  {x_coordinate}  {y_coordinate}')
-        self.w = PixelTemporalVariation(round(x_coordinate), round(y_coordinate), self.filename)
+        self.w = PixelTemporalVariation(round(x_coordinate), round(y_coordinate), self.filename, self.get_acquisition_rate())
         self.w.show()
 
     ''' 

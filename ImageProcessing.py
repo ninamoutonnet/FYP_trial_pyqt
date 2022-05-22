@@ -5,6 +5,7 @@ import numpy as np
 import os
 from matplotlib import pyplot as plt
 import tifffile
+from scipy.ndimage.filters import gaussian_filter
 
 
 
@@ -48,10 +49,11 @@ def fluoMap(filename, downsample_factor):
     heat_map_np_array = np.copy(imfile)
 
     # value of darkness due to the microscope -> use the average of the first pixels in the top corner to do so
-    value_of_darkness = np.mean(imfile[1:5,1:5, 1:20])
+    value_of_darkness = np.mean(imfile[1:20, 1:5, 1:5])
 
     for i in range(imfile.shape[0]):
         heat_map_np_array[i] = abs(imfile[i] - mean_img - value_of_darkness)
+        heat_map_np_array[i] = gaussian_filter(heat_map_np_array[i], sigma=1)
 
     tifffile.imwrite(OUTFILE, heat_map_np_array, photometric='minisblack')
 
