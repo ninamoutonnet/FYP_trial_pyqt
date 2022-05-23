@@ -61,11 +61,10 @@ class CNMFE_class():
             axes[1].set_xlabel("frame number", fontsize=5)
             axes[1].grid()
 
-            # allows to not display the individual ones
-            plt.close(fig)
-
             name = dir + '/CNMFE_results_' + str(neuron_index)
             plt.savefig(name, dpi=1200)
+            # allows to not display the individual ones
+            plt.close(fig)
 
     def plot_footprints_on_grid(self, footprints, n_cols=10):
         '''
