@@ -12,7 +12,7 @@ from PIL import ImageSequence
 from PIL import TiffImagePlugin
 import numpy as np
 import CNMFE
-
+import PCA
 
 class PixelTemporalVariation(qtw.QWidget):
 
@@ -410,6 +410,19 @@ class CNMFE_GUI(qtw.QWidget):
         cnmfe_object.plot_summary()
 
 
+class PCA_GUI(qtw.QWidget):
+
+    def __init__(self, filename):
+        '''Main Window constructor'''
+        super().__init__()
+        #  get the filname/path of the original tiff stack to use when looking at individual pixel intensity
+        self.filename = filename # this is the downsampled tiff file
+        print(filename)
+        # perform PCA
+        pca_object = PCA.PCA_class(self.filename)
+
+
+
 class MainWindow(qtw.QWidget):
 
     def __init__(self):
@@ -631,7 +644,6 @@ class MainWindow(qtw.QWidget):
 
         try:
             os.remove(name)
-            # os.remove('multipage_tif_resized.tif')
         except:
             pass
 
