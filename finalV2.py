@@ -159,83 +159,99 @@ class CNMFE_GUI(qtw.QWidget):
 
         qtw.QToolTip.setFont(qtg.QFont('arial',20))
 
-        # create the text widgets for the entry of the downsampling factor and sampling rate
+        # create the text widgets for the entry of parameters
         self.lineEdit_average_cell_diameter = qtw.QLineEdit()
+        self.lineEdit_average_cell_diameter.setPlaceholderText('7') #show the default value
         label_average_cell_diameter = qtw.QLabel('Average cell diameter')
         label_average_cell_diameter.setToolTip('The average cell diameter of a representative cell in pixels,  <b> default = 7 <b>')
         variable_layout.addRow(label_average_cell_diameter, self.lineEdit_average_cell_diameter)
 
         self.lineEdit_min_pixel_correlation = qtw.QLineEdit()
+        self.lineEdit_min_pixel_correlation.setPlaceholderText('0.8')
         label_min_pixel_correlation = qtw.QLabel('Minimum pixel correlation')
         label_min_pixel_correlation.setToolTip('The minimum correlation of a pixel with its immediate neighbors when searching for new cell centers,  <b> default = 0.8 <b>')
         variable_layout.addRow(label_min_pixel_correlation, self.lineEdit_min_pixel_correlation)
 
         self.lineEdit_min_peak_to_noise_ratio = qtw.QLineEdit()
+        self.lineEdit_min_peak_to_noise_ratio.setPlaceholderText('10.0')
         label_min_peak_to_noise_ratio = qtw.QLabel('min_peak_to_noise_ratio')
         label_min_peak_to_noise_ratio.setToolTip('The minimum peak-to-noise ratio of a pixel when searching for new cell centers,  <b> default = 10 <b>')
         variable_layout.addRow(label_min_peak_to_noise_ratio, self.lineEdit_min_peak_to_noise_ratio)
 
         self.lineEdit_gaussian_kernel_size = qtw.QLineEdit()
+        self.lineEdit_gaussian_kernel_size.setPlaceholderText('0')
         label_gaussian_kernel_size = qtw.QLabel('Gaussian kernel size')
         label_gaussian_kernel_size.setToolTip('The width in pixels of the Gaussian kernel used for spatial filtering of the movie before cell initialization (automatically estimated when the value provided is smaller than 3),  <b> default = 0 <b>')
         variable_layout.addRow(label_gaussian_kernel_size, self.lineEdit_gaussian_kernel_size)
 
         self.lineEdit_closing_kernel_size = qtw.QLineEdit()
+        self.lineEdit_closing_kernel_size.setPlaceholderText('0')
         label_closing_kernel_size = qtw.QLabel('Closing kernel size')
         label_closing_kernel_size.setToolTip('The size in pixels of the morphological closing kernel used for removing small disconnected components and connecting small cracks within individual cell footprints (automatically estimated when the value provided is smaller than 3),  <b> default = 0 <b>')
         variable_layout.addRow(label_closing_kernel_size, self.lineEdit_closing_kernel_size)
 
         self.lineEdit_background_downsampling_factor = qtw.QLineEdit()
+        self.lineEdit_background_downsampling_factor.setPlaceholderText('2')
         label_background_downsampling_factor = qtw.QLabel('Background downsampling factor')
         label_background_downsampling_factor.setToolTip('The spatial downsampling factor to use when estimating the background activity,  <b> default = 2 <b>')
         variable_layout.addRow(label_background_downsampling_factor, self.lineEdit_background_downsampling_factor)
 
         self.lineEdit_ring_size_factor = qtw.QLineEdit()
+        self.lineEdit_ring_size_factor.setPlaceholderText('1.4')
         label_ring_size_factor = qtw.QLabel('Ring size factor')
         label_ring_size_factor.setToolTip('The multiple of the average cell diameter to use for computing the radius of the ring model used for estimating the background activity,  <b> default = 1.4 <b>')
         variable_layout.addRow(label_ring_size_factor, self.lineEdit_ring_size_factor)
 
         self.lineEdit_merge_threshold = qtw.QLineEdit()
+        self.lineEdit_merge_threshold.setPlaceholderText('0.7')
         label_merge_threshold = qtw.QLabel('Merge threshold')
         label_merge_threshold.setToolTip('The temporal correlation threshold for merging cells that are spatially close,  <b> default = 0.7 <b>')
         variable_layout.addRow(label_merge_threshold, self.lineEdit_merge_threshold)
 
         self.lineEdit_num_threads = qtw.QLineEdit()
+        self.lineEdit_num_threads.setPlaceholderText('4')
         label_num_threads = qtw.QLabel('Number of threads')
         label_num_threads.setToolTip('The number of threads to use for processing	,  <b> default = 4 <b>')
         variable_layout.addRow(label_num_threads, self.lineEdit_num_threads)
 
         self.lineEdit_processing_mode = qtw.QLineEdit()
+        self.lineEdit_processing_mode.setPlaceholderText('2')
         label_processing_mode = qtw.QLabel('Processing mode')
         label_processing_mode.setToolTip('the processing mode to use to run CNMF-E (0: all in memory, 1: sequential patches, 2: parallel patches). All in memory: processes the entire field of view at once. Sequential patches: breaks the field of view into overlapping patches and processes them one at a time using the specified number of threads where parallelization is possible. Parallel patches: breaks the field of view into overlapping patches and processes them in parallel using a single thread for each.,  <b> default = 2 <b>')
         variable_layout.addRow(label_processing_mode, self.lineEdit_processing_mode)
 
         self.lineEdit_patch_size = qtw.QLineEdit()
+        self.lineEdit_patch_size.setPlaceholderText('80')
         label_patch_size = qtw.QLabel('Patch size')
         label_patch_size.setToolTip('The side length of an individual square patch of the field of view in pixels,  <b> default = 80 <b>')
         variable_layout.addRow(label_patch_size, self.lineEdit_patch_size)
 
         self.lineEdit_patch_overlap = qtw.QLineEdit()
+        self.lineEdit_patch_overlap.setPlaceholderText('20')
         label_patch_overlap = qtw.QLabel('Patch overlap')
         label_patch_overlap.setToolTip('The amount of overlap between adjacent patches in pixels,  <b> default = 20 <b>')
         variable_layout.addRow(label_patch_overlap, self.lineEdit_patch_overlap)
 
         self.lineEdit_deconvolve = qtw.QLineEdit()
+        self.lineEdit_deconvolve.setPlaceholderText('0')
         label_deconvolve = qtw.QLabel('Deconvolve')
         label_deconvolve.setToolTip('Specifies whether to deconvolve the final temporal traces (0: return raw traces, 1: return deconvolved traces),  <b> default = 0 <b>')
         variable_layout.addRow(label_deconvolve, self.lineEdit_deconvolve)
 
         self.lineEdit_output_units = qtw.QLineEdit()
+        self.lineEdit_output_units.setPlaceholderText('1')
         label_output_units = qtw.QLabel('Output units')
         label_output_units.setToolTip('The units of the output temporal traces (0: dF, 1: dF over noise). dF: temporal traces on the same scale of pixel intensity as the original movie. dF is calculated as the average fluorescence activity of all pixels in a cell, scaled so that each spatial footprint has a magnitude of 1. dF over noise: temporal traces divided by their respective estimated noise level. This can be interpreted similarly to a z-score, with the added benefit that the noise is a more robust measure of the variance in a temporal trace compared to the standard deviation.,  <b> default = 1 <b>')
         variable_layout.addRow(label_output_units, self.lineEdit_output_units)
 
         self.lineEdit_output_filetype = qtw.QLineEdit()
+        self.lineEdit_output_filetype.setPlaceholderText('0')
         label_output_filetype = qtw.QLabel('Output filetype')
         label_output_filetype.setToolTip('The file types into which the output will be saved (0: footprints saved to a tiff file and traces saved to a csv file, 1: output saved to a h5 file under the keys footprints and traces),  <b> default = 0 <b>')
         variable_layout.addRow(label_output_filetype, self.lineEdit_output_filetype)
 
         self.lineEdit_verbose = qtw.QLineEdit()
+        self.lineEdit_verbose.setPlaceholderText('1')
         label_verbose = qtw.QLabel('Verbose')
         label_verbose.setToolTip('To enable and disable verbose mode. When enabled, progress is displayed in the console. (0: disabled, 1: enabled),  <b> default = 0 <b>')
         variable_layout.addRow(label_verbose, self.lineEdit_verbose)
@@ -267,7 +283,7 @@ class CNMFE_GUI(qtw.QWidget):
         background_downsampling_factor = self.lineEdit_background_downsampling_factor.text()
         ring_size_factor = self.lineEdit_ring_size_factor.text()
         merge_threshold = self.lineEdit_merge_threshold.text()
-        num_threads =  self.lineEdit_num_threads.text()
+        num_threads = self.lineEdit_num_threads.text()
         processing_mode = self.lineEdit_processing_mode.text()
         patch_size = self.lineEdit_patch_size.text()
         patch_overlap = self.lineEdit_patch_overlap.text()
@@ -278,112 +294,118 @@ class CNMFE_GUI(qtw.QWidget):
 
         # in case the field is not filled, set default values
         if average_cell_diameter == '':
-            average_cell_diameter = 7.0
+            # integer
+            average_cell_diameter = 7
         else:
-            average_cell_diameter = float(average_cell_diameter)
+            average_cell_diameter = int(average_cell_diameter)
 
         if min_pixel_correlation == '':
+            # float
             min_pixel_correlation = 0.8
         else:
             min_pixel_correlation = float(min_pixel_correlation)
 
         if min_peak_to_noise_ratio == '':
+            # float
             min_peak_to_noise_ratio = 10.0
         else:
             min_peak_to_noise_ratio = float(min_peak_to_noise_ratio)
 
         if gaussian_kernel_size == '':
-            gaussian_kernel_size = 0.0
+            # int
+            gaussian_kernel_size = 0
         else:
-            gaussian_kernel_size = float(gaussian_kernel_size)
+            gaussian_kernel_size = int(gaussian_kernel_size)
 
         if closing_kernel_size == '':
-            closing_kernel_size = 0.0
+            # int
+            closing_kernel_size = 0
         else:
-            closing_kernel_size = float(closing_kernel_size)
+            closing_kernel_size = int(closing_kernel_size)
 
         if background_downsampling_factor == '':
-            background_downsampling_factor = 2.0
+            # int
+            background_downsampling_factor = 2
         else:
-            background_downsampling_factor = float(background_downsampling_factor)
+            background_downsampling_factor = int(background_downsampling_factor)
 
         if ring_size_factor == '':
+            # float
             ring_size_factor = 1.4
         else:
             ring_size_factor = float(ring_size_factor)
 
         if merge_threshold == '':
+            # float
             merge_threshold = 0.7
         else:
             merge_threshold = float(merge_threshold)
 
         if num_threads == '':
-            num_threads = 4.0
+            num_threads = 4
         else:
-            num_threads = float(num_threads)
+            num_threads = int(num_threads)
 
         if processing_mode == '':
-            processing_mode = 2.0
+            processing_mode = 2
         else:
-            processing_mode = float(processing_mode)
+            processing_mode = int(processing_mode)
 
         if patch_size == '':
-            patch_size = 80.0
+            print('no values')
+            patch_size = 80
         else:
-            patch_size = float(patch_size)
+            print(' values')
+
+            patch_size = int(patch_size)
 
         if patch_overlap == '':
-            patch_overlap = 2.0
+            patch_overlap = 2
         else:
-            patch_overlap = float(patch_overlap)
+            patch_overlap = int(patch_overlap)
 
         if deconvolve == '':
-            deconvolve = 0.0
+            deconvolve = 0
         else:
-            deconvolve = float(deconvolve)
+            deconvolve = int(deconvolve)
 
         if output_units == '':
-            output_units = 1.0
+            output_units = 1
         else:
-            output_units = float(output_units)
+            output_units = int(output_units)
 
         if output_filetype == '':
-            output_filetype = 0.0
+            output_filetype = 0
         else:
-            output_filetype = float(output_filetype)
+            output_filetype = int(output_filetype)
 
         if verbose == '':
-            verbose = 0.0
+            verbose = 1
         else:
-            verbose = float(verbose)
+            verbose = int(verbose)
 
         # second, check the validity. If the input is ok, generate the fluorescence variation map
-        if (num_threads).is_integer() and processing_mode.is_integer() and patch_size.is_integer() and patch_overlap.is_integer() and deconvolve.is_integer() and output_units.is_integer() and output_filetype.is_integer() and verbose.is_integer():
-            print(f'OK - RUNNING CNMF-E')
-            #  create a new CNMFE object, give it the resized filename as input
-            cnmfe_object = CNMFE.CNMFE_class(self.filename,
-                                            int(average_cell_diameter),
-                                            min_pixel_correlation,
-                                            min_peak_to_noise_ratio,
-                                            int(gaussian_kernel_size),
-                                            int(closing_kernel_size),
-                                            int(background_downsampling_factor),
-                                            ring_size_factor,
-                                            merge_threshold,
-                                            int(num_threads),
-                                            int(processing_mode),
-                                            int(patch_size),
-                                            int(patch_overlap),
-                                            int(deconvolve),
-                                            int(output_units),
-                                            int(output_filetype),
-                                            int(verbose))
-            #  here the function should automatically display the results, this should be 1 condensed QWindow
-            #  The QWindow should have a 'save' button, to enable the scientist to save the data.
-            cnmfe_object.plot_summary()
+        print(f'OK - RUNNING CNMF-E')
+        #  create a new CNMFE object, give it the resized filename as input
+        cnmfe_object = CNMFE.CNMFE_class(self.filename,
+                          average_cell_diameter,
+                          min_pixel_correlation,
+                          min_peak_to_noise_ratio,
+                          gaussian_kernel_size,
+                          closing_kernel_size,
+                          background_downsampling_factor,
+                          ring_size_factor,
+                          merge_threshold,
+                          num_threads,
+                          processing_mode,
+                          patch_size,
+                          patch_overlap,
+                          deconvolve,
+                          output_units,
+                          output_filetype,
+                          verbose)
 
-        else:
-            print(f'ERROR IN PARAM')
+        cnmfe_object.plot_summary()
 
 
 class MainWindow(qtw.QWidget):
@@ -586,7 +608,7 @@ class MainWindow(qtw.QWidget):
         # extract the info from the main GUI window
         downsample_factor = self.get_downsampling_value()
         # downsample the file and store it automatically as 'multipage_tif_resized.tif'
-        self.downsampling_tiff_stack(self, self.filename, downsample_factor)
+        self.downsampling_tiff_stack(self.filename, downsample_factor)
         # use that downsampled file to call the PCA/SVD
         self.pca_window = PCA_GUI('multipage_tif_resized.tif')
         return
@@ -595,7 +617,7 @@ class MainWindow(qtw.QWidget):
         # extract the info from the main GUI window
         downsample_factor = self.get_downsampling_value()
         # downsample the file and store it automatically as 'multipage_tif_resized.tif'
-        self.downsampling_tiff_stack(self, self.filename, downsample_factor)
+        self.downsampling_tiff_stack(self.filename, downsample_factor)
         # use that downsampled file to call the CNMFE
         self.cnmf_window = CNMFE_GUI('multipage_tif_resized.tif')
 

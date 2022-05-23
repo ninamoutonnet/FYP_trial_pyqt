@@ -98,7 +98,7 @@ with tifffile.Timer():
 
 with tifffile.Timer():
     # s.decomposition()
-    s.decomposition(algorithm="SVD", centre="navigation")
+    s.decomposition(algorithm="PCA", centre="navigation")
     # s.decomposition(algorithm="ORPCA", output_dimension=9, method="MomentumSGD", subspace_learning_rate=1.1, subspace_momentum=0.5) DOES NOT RUN
     # s.decomposition(True, algorithm="NMF", output_dimension=9)
     # s.decomposition(algorithm="RPCA", output_dimension=3, lambda1=0.1)

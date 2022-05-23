@@ -8,29 +8,32 @@ from matplotlib import cm
 
 class CNMFE_class():
 
-    def __init__(self, filename, average_cell_diameter_IN, min_pixel_correlation_IN, min_peak_to_noise_ratio_IN, gaussian_kernel_size_IN, closing_kernel_size_IN, background_downsampling_factor_IN, ring_size_factor_IN, merge_threshold_IN, num_threads_IN, processing_mode_IN, patch_size_IN, patch_overlap_IN,  deconvolve_IN, output_units_IN, output_filetype_IN, verbose_IN):
+    def __init__(self, filename, average_cell_diameter_IN, min_pixel_correlation_IN, min_peak_to_noise_ratio_IN,
+                 gaussian_kernel_size_IN, closing_kernel_size_IN, background_downsampling_factor_IN,
+                 ring_size_factor_IN, merge_threshold_IN, num_threads_IN, processing_mode_IN,
+                 patch_size_IN, patch_overlap_IN,  deconvolve_IN, output_units_IN, output_filetype_IN, verbose_IN):
 
         # perform the CNMFE algporithm and store the results in the footprints and traces variables.
         # the CNMFE_class object requires the filename if the tiff stack on which it performs the CNMFE
         self.footprints, self.traces = inscopix_cnmfe.run_cnmfe(
             input_movie_path=filename,
             output_dir_path='output',
-            output_filetype=output_filetype_IN,
-            average_cell_diameter=20,  # 7(default)->3, 15 -> 5, 20 -> 5
-            min_pixel_correlation=0.8,
-            min_peak_to_noise_ratio=10.0,
-            gaussian_kernel_size=0,
-            closing_kernel_size=0,
-            background_downsampling_factor=2,
-            ring_size_factor=1.4,
-            merge_threshold=0.7,
-            num_threads=4,
-            processing_mode=2,
-            patch_size=80,
-            patch_overlap=20,
-            output_units=1,
-            deconvolve=0,
-            verbose=1
+            output_filetype= output_filetype_IN,
+            average_cell_diameter= average_cell_diameter_IN,  # 7(default)->3, 15 -> 5, 20 -> 5
+            min_pixel_correlation= min_pixel_correlation_IN, # 0.8
+            min_peak_to_noise_ratio=min_peak_to_noise_ratio_IN, #10.0,
+            gaussian_kernel_size=gaussian_kernel_size_IN, #0,
+            closing_kernel_size=closing_kernel_size_IN, #,0
+            background_downsampling_factor= background_downsampling_factor_IN, # 2,
+            ring_size_factor=ring_size_factor_IN, #1.4,
+            merge_threshold= merge_threshold_IN, # 0.7,
+            num_threads=num_threads_IN, #4,
+            processing_mode=processing_mode_IN, #2,
+            patch_size=patch_size_IN, #80,
+            patch_overlap=patch_overlap_IN, #20,
+            output_units=output_units_IN, #1,
+            deconvolve=deconvolve_IN, #0,
+            verbose=verbose_IN, #1
         )
 
 
@@ -43,8 +46,6 @@ class CNMFE_class():
 
         for neuron_index in range(self.footprints.shape[0]):
             fig, axes = plt.subplots(1, 2, figsize=(10, 2), gridspec_kw={'width_ratios': [1, 3]})
-            # allows to not display the individual ones
-            plt.close(fig)
 
             # spatial footprint
             axes[0].imshow(self.footprints[neuron_index - 1])
@@ -60,8 +61,11 @@ class CNMFE_class():
             axes[1].set_xlabel("frame number", fontsize=5)
             axes[1].grid()
 
+            # allows to not display the individual ones
+            plt.close(fig)
+
             name = dir + '/CNMFE_results_' + str(neuron_index)
-            plt.savefig(name)
+            plt.savefig(name, dpi=1200)
 
     def plot_footprints_on_grid(self, footprints, n_cols=10):
         '''
