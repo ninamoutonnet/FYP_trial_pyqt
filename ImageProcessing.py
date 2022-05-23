@@ -15,24 +15,23 @@ def fluoMap(filename, downsample_factor):
     # # # # # # #
 
     # because the naming is automatic and you want a brand new file each time, ensure that no previous version
-    # named 'multipage_tif_resized.tif' exist.
+
+    file_name_no_path = os.path.basename(os.path.normpath(filename))
+    name = 'Downsampled_' + file_name_no_path
+
     try:
-        os.remove('multipage_tif_resized.tif')
+        os.remove(name)
         os.remove('average_tif_resized.tif')
     except:
         pass
 
-    INFILE = filename
-    RESIZED_STACK = 'multipage_tif_resized.tif'
-    OUTFILE = 'average_tif_resized.tif'
-
     pages = []
-    imagehandler = Image.open(INFILE)
+    imagehandler = Image.open(filename)
     for page in ImageSequence.Iterator(imagehandler):
         new_size = (int(page.size[0] / downsample_factor), int(page.size[1] / downsample_factor))
         page = page.resize(new_size)
         pages.append(page)
-    with TiffImagePlugin.AppendingTiffWriter(RESIZED_STACK) as tf:
+    with TiffImagePlugin.AppendingTiffWriter(name) as tf:
         for page in pages:
             page.save(tf)
             tf.newFrame()
@@ -40,7 +39,7 @@ def fluoMap(filename, downsample_factor):
 
     # Now that you have resized the whole stack, start the processing
     # Read the image from the TIFF file as numpy array:
-    imfile = tifffile.imread(RESIZED_STACK)
+    imfile = tifffile.imread(name)
     # Take the mean, pixel per pixel of the whole image
     mean_img = imfile.mean(axis=0)
     plt.gray()
@@ -55,6 +54,7 @@ def fluoMap(filename, downsample_factor):
         heat_map_np_array[i] = abs(imfile[i] - mean_img - value_of_darkness)
         heat_map_np_array[i] = gaussian_filter(heat_map_np_array[i], sigma=1)
 
+    OUTFILE = 'average_tif_resized.tif'
     tifffile.imwrite(OUTFILE, heat_map_np_array, photometric='minisblack')
 
     return OUTFILE

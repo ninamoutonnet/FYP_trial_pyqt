@@ -65,9 +65,12 @@ class FluorescenceIntensityMap(qtw.QWidget):
         self.filename = filename
         self.acquisition_rate = acquisition_rate
 
+        # strip the name of the file from the path
+        self.filename_no_path = os.path.basename(os.path.normpath(self.filename))
+        self.filename_downsampled = 'Downsampled_' + self.filename_no_path
+
+
         #  start UI code
-        # QLabel
-        label = qtw.QLabel(filename, self, margin=10)
 
         # give the tiff file to the intensity function
         self.fluo_output = fluoMap(filename, downsample_factor)
@@ -91,7 +94,6 @@ class FluorescenceIntensityMap(qtw.QWidget):
         layout = qtw.QVBoxLayout()
         self.setLayout(layout)
         layout.addWidget(self.stackViewer)
-        layout.addWidget(label)
         layout.addWidget(button)
 
         #  end main UI code - Display the UI
@@ -133,7 +135,7 @@ class FluorescenceIntensityMap(qtw.QWidget):
             y_coordinate = y * scaling_factor
             x_coordinate = x * scaling_factor
 
-        self.w = PixelTemporalVariation(round(x_coordinate), round(y_coordinate), 'multipage_tif_resized.tif', self.acquisition_rate)
+        self.w = PixelTemporalVariation(round(x_coordinate), round(y_coordinate), self.filename_downsampled, self.acquisition_rate)
         self.w.show()
 
     def WindowIntensityVariation(self):
@@ -608,25 +610,28 @@ class MainWindow(qtw.QWidget):
         # extract the info from the main GUI window
         downsample_factor = self.get_downsampling_value()
         # downsample the file and store it automatically as 'multipage_tif_resized.tif'
-        self.downsampling_tiff_stack(self.filename, downsample_factor)
+        filename_downsampled = self.downsampling_tiff_stack(self.filename, downsample_factor)
         # use that downsampled file to call the PCA/SVD
-        self.pca_window = PCA_GUI('multipage_tif_resized.tif')
+        self.pca_window = PCA_GUI(filename_downsampled)
         return
 
     def cnmfe_trial(self):
         # extract the info from the main GUI window
         downsample_factor = self.get_downsampling_value()
         # downsample the file and store it automatically as 'multipage_tif_resized.tif'
-        self.downsampling_tiff_stack(self.filename, downsample_factor)
+        filename_downsampled = self.downsampling_tiff_stack(self.filename, downsample_factor)
         # use that downsampled file to call the CNMFE
-        self.cnmf_window = CNMFE_GUI('multipage_tif_resized.tif')
+        self.cnmf_window = CNMFE_GUI(filename_downsampled)
 
         return
 
     def downsampling_tiff_stack(self, filename, downsample_factor):
         # delete any existing version of the file you are about to over write
+        name = 'Downsampled_' + self.filename_no_path
+
         try:
-            os.remove('multipage_tif_resized.tif')
+            os.remove(name)
+            # os.remove('multipage_tif_resized.tif')
         except:
             pass
 
@@ -637,10 +642,12 @@ class MainWindow(qtw.QWidget):
             new_size = (int(page.size[0] / downsample_factor), int(page.size[1] / downsample_factor))
             page = page.resize(new_size)
             pages.append(page)
-        with TiffImagePlugin.AppendingTiffWriter('multipage_tif_resized.tif') as tf:
+        with TiffImagePlugin.AppendingTiffWriter(name) as tf:
             for page in pages:
                 page.save(tf)
                 tf.newFrame()
+
+        return name
 
     def get_downsampling_value(self):
         # first of all, extract the information from the text box
