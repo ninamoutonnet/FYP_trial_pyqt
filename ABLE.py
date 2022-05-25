@@ -9,7 +9,7 @@ import os
 
 class ABLE_class():
 
-    def __init__(self, filename):
+    def __init__(self, filename, radius, alpha, blur_radius, lambda_param, mergeCorr, metric, maxlt):
 
         filename = 'Copy_of_multipage_tif_resized.tif'
         eng = matlab.engine.start_matlab()
@@ -23,13 +23,13 @@ class ABLE_class():
         smaller_ROIs = np.asarray(smaller_ROIs)
         larger_ROI = np.asarray(larger_ROI)
 
-        print(phi_0.shape)
+        '''print(phi_0.shape)
         print(masks.shape)
         print(cell_ts.shape)
         print(nhbd_ts.shape)
         print(corrIm.shape)
         print(smaller_ROIs.shape)
-        print(larger_ROI.shape)
+        print(larger_ROI.shape)'''
 
         # save the footprints and temporal traces of each neurons as a png in a dedicated folder
         # make the dedicated folder and if already exists, delete the previous one
@@ -46,7 +46,7 @@ class ABLE_class():
 
             # spatial footprint
             axes[0].imshow(corrIm, interpolation='nearest')
-            axes[0].imshow(masks[:, :, neuron_index], cmap='jet', alpha=0.8)  # interpolation='none'
+            axes[0].imshow(masks[:, :, neuron_index], alpha=0.8)  # interpolation='none'
             axes[0].set_title("Spatial footprint", fontsize=5)
             axes[0].grid(False)
             axes[0].set_xticks([])
@@ -61,7 +61,7 @@ class ABLE_class():
 
             name = dir + '/ABLE_results_' + str(neuron_index)
             plt.savefig(name, dpi=1200)
-            # allows to not display the individual ones
+            # allows to not display the individual plots when generating them
             plt.close(fig)
 
 
