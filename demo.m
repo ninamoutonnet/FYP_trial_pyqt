@@ -1,4 +1,4 @@
-function [phi_0, masks, cell_ts, nhbd_ts, corrIm, smaller_ROIs, larger_ROIs] = demo(name)
+function [masks, cell_ts, nhbd_ts, corrIm, smaller_ROIs, larger_ROIs] = demo(name, radius, alpha, blur_radius, lambda_param, mergeCorr, metric, maxlt)
 
     tiff_info = imfinfo(name); % return tiff structure, one element per image
     tiff_stack = imread(name, 1) ; % read in first image
@@ -13,25 +13,22 @@ function [phi_0, masks, cell_ts, nhbd_ts, corrIm, smaller_ROIs, larger_ROIs] = d
 
     %% Initialisation
     % Parameters
-    radius                      = 7;
-    alpha                       = 0.55;
-    init_opt.blur_radius        = 1.5;
-    phi_0          = initialise(corrIm, radius, alpha, init_opt);
-
+    init_opt.blur_radius        = double(blur_radius);
+    phi_0          = initialise(corrIm, double(radius), double(alpha), init_opt);
 
     % Refresh workspace
     close all; clear seg_opt;
 
     % Algorithm parameters
-    seg_opt.lambda              = 10;
-    seg_opt.mergeCorr           = 0.95;
+    seg_opt.lambda              = double(lambda_param);
+    seg_opt.mergeCorr           = double(mergeCorr);
     seg_opt.mergeDuring         = 1;
-    seg_opt.metric              = 'corr';
-    seg_opt.maxlt               = 150;
+    seg_opt.metric              = metric;
+    seg_opt.maxlt               = double(maxlt);
 
     % Do segmentation, segmenting about 300 ROIs takes ~15 mins
     tic;
-    [masks, cell_ts, nhbd_ts] = segment(phi_0, video, radius, seg_opt);
+    [masks, cell_ts, nhbd_ts] = segment(phi_0, video, double(radius), seg_opt);
     runtime = toc
 
     % Get number of pixels in each mask

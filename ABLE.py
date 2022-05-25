@@ -11,11 +11,10 @@ class ABLE_class():
 
     def __init__(self, filename, radius, alpha, blur_radius, lambda_param, mergeCorr, metric, maxlt):
 
-        filename = 'Copy_of_multipage_tif_resized.tif'
+        # filename = 'Copy_of_multipage_tif_resized.tif'
         eng = matlab.engine.start_matlab()
-        [phi_0, masks, cell_ts, nhbd_ts, corrIm, smaller_ROIs, larger_ROI] = eng.demo(filename, nargout = 7)
+        [masks, cell_ts, nhbd_ts, corrIm, smaller_ROIs, larger_ROI] = eng.demo(filename, radius, alpha, blur_radius, lambda_param, mergeCorr, metric, maxlt, nargout = 6)
         # convert to numpy
-        phi_0 = np.asarray(phi_0)
         masks = np.asarray(masks)
         cell_ts = np.asarray(cell_ts)
         nhbd_ts = np.asarray(nhbd_ts)
@@ -23,13 +22,12 @@ class ABLE_class():
         smaller_ROIs = np.asarray(smaller_ROIs)
         larger_ROI = np.asarray(larger_ROI)
 
-        '''print(phi_0.shape)
         print(masks.shape)
         print(cell_ts.shape)
         print(nhbd_ts.shape)
         print(corrIm.shape)
         print(smaller_ROIs.shape)
-        print(larger_ROI.shape)'''
+        print(larger_ROI.shape)
 
         # save the footprints and temporal traces of each neurons as a png in a dedicated folder
         # make the dedicated folder and if already exists, delete the previous one
