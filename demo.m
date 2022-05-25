@@ -1,15 +1,12 @@
-function [phi_0, masks, cell_ts, nhbd_ts] = demo(name)
+function [phi_0, masks, cell_ts, nhbd_ts, corrIm, smaller_ROIs, larger_ROIs] = demo(name)
 
-    disp('here1!')
     tiff_info = imfinfo(name); % return tiff structure, one element per image
     tiff_stack = imread(name, 1) ; % read in first image
-    disp('here2!')
     %concatenate each successive tiff to tiff_stack
     for ii = 2 : size(tiff_info, 1)
         temp_tiff = imread(name, ii);
         tiff_stack = cat(3 , tiff_stack, temp_tiff);
     end
-    disp('here3!')
     video = tiff_stack;
     meanIm = mean(video,3);
     corrIm = crossCorr(video);
@@ -19,7 +16,6 @@ function [phi_0, masks, cell_ts, nhbd_ts] = demo(name)
     radius                      = 7;
     alpha                       = 0.55;
     init_opt.blur_radius        = 1.5;
-    disp('here4!')
     phi_0          = initialise(corrIm, radius, alpha, init_opt);
 
 
@@ -43,6 +39,13 @@ function [phi_0, masks, cell_ts, nhbd_ts] = demo(name)
     for mask_num = 1:size(masks,3)
        pix_num(mask_num) = nnz(masks(:,:,mask_num));
     end
+
+    % Threshold:
+    % If a user is only looking for cell bodies, it is beneficial to threshold
+    % the size of the ROIs.
+    min_size     = pi*radius^2*0.5;
+    smaller_ROIs = masks(:,:, pix_num < min_size);
+    larger_ROIs  = masks(:,:, pix_num >= min_size);
 
 
 end
