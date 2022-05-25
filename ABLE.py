@@ -22,16 +22,17 @@ class ABLE_class():
         smaller_ROIs = np.asarray(smaller_ROIs)
         larger_ROI = np.asarray(larger_ROI)
 
-        print(masks.shape)
+        '''print(masks.shape)
         print(cell_ts.shape)
         print(nhbd_ts.shape)
         print(corrIm.shape)
         print(smaller_ROIs.shape)
-        print(larger_ROI.shape)
+        print(larger_ROI.shape)'''
 
         # save the footprints and temporal traces of each neurons as a png in a dedicated folder
         # make the dedicated folder and if already exists, delete the previous one
         dir = 'ABLE_results_' + str(filename)
+        dir, temp = os.path.splitext(dir) # removes the .tif
         if os.path.exists(dir):
             shutil.rmtree(dir)
         os.makedirs(dir)
@@ -63,14 +64,5 @@ class ABLE_class():
             plt.close(fig)
 
 
-        '''
-        plt.imshow(corrIm, interpolation='nearest', cmap=plt.gray())
-        for i in range(masks.shape[2]):
-            plt.imshow(masks[:,:,i], cmap='jet', alpha=0.8)  # interpolation='none'
-        plt.show()
-        
-        plt.plot(cell_ts[i,:])
-        plt.plot(nhbd_ts[i,:])
-        plt.plot(cell_ts[i,:] - nhbd_ts[i,:])
-        plt.show()'''
+
 
