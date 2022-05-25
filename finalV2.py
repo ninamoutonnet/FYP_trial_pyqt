@@ -504,8 +504,8 @@ class MainWindow(qtw.QWidget):
             shortcut=qtg.QKeySequence('Ctrl+p')
         )
 
-        button_ORPCA = qtw.QPushButton(
-            "ORPCA",
+        button_ABLE = qtw.QPushButton(
+            "ABLE",
             self,
             checkable=True,
             checked=True,
@@ -576,7 +576,7 @@ class MainWindow(qtw.QWidget):
         complex_processing_widget.setLayout(complex_processing_layout)
         complex_processing_layout.addWidget(button_Manual)
         complex_processing_layout.addWidget(button_PCA)
-        complex_processing_layout.addWidget(button_ORPCA)
+        complex_processing_layout.addWidget(button_ABLE)
         complex_processing_layout.addWidget(button_CNMFE)
 
         complex_processing_widget.setSizePolicy(
@@ -594,7 +594,7 @@ class MainWindow(qtw.QWidget):
             qtw.QSizePolicy.Preferred
         )
 
-        button_ORPCA.setSizePolicy(
+        button_ABLE.setSizePolicy(
             qtw.QSizePolicy.Preferred,
             qtw.QSizePolicy.Preferred
         )
