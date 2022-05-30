@@ -140,13 +140,16 @@ class PCA_class():
         plt.plot(std)
         plt.show()'''
 
+
+
         # how many values are above/below the average?
         diff = np.zeros((loadings.shape[1], 1))
         for i in range(loadings.shape[1]):
-            mean = np.mean(loadings[:, i])
-            loadings[:, i].sort()
-            strictly_above = len(loadings[:, i]) - bisect(loadings[:, i], mean)
-            below_or_equal = len(loadings[:, i]) - strictly_above
+            loadings2 = np.copy(loadings)
+            mean = np.mean(loadings2[:, i])
+            loadings2[:, i].sort()
+            strictly_above = len(loadings2[:, i]) - bisect(loadings2[:, i], mean)
+            below_or_equal = len(loadings2[:, i]) - strictly_above
             diff[i] = strictly_above - below_or_equal
 
         ####################
@@ -167,7 +170,7 @@ class PCA_class():
         boundarie = np.where(diff >= 0)
         if len(boundarie) > 0 and len(boundarie[0]) > 0:
             # assume you always enter the loop
-            limit =  boundarie[0][0]
+            limit = boundarie[0][0]
             print('First Index of element >=0 ', limit)
 
         #create directory to save the file
@@ -177,8 +180,8 @@ class PCA_class():
             shutil.rmtree(dir)
         os.makedirs(dir)
 
-        for neuron_index in range(limit-1):
 
+        for neuron_index in range(limit-1):
             neuron_index = neuron_index + 1 #avoid i=0
             fig, axes = plt.subplots(1, 2, figsize=(10, 2), gridspec_kw={'width_ratios': [1, 3]})
 
@@ -192,7 +195,7 @@ class PCA_class():
             axes[0].set_yticks([])
 
             # temporal dynamics
-            axes[1].set_title("Temporal trace", fontsize=5)
+            axes[1].set_title("Loading factor", fontsize=5)
             axes[1].plot(loadings[:, neuron_index], label='neuron {0}'.format(neuron_index), color='blue')
             axes[1].set_ylabel("A.U", fontsize=5)
             axes[1].set_xlabel("frame number", fontsize=5)
@@ -203,7 +206,7 @@ class PCA_class():
             # allows to not display the individual ones
             plt.close(fig)
 
-
+        print('done')
         #shape = s.axes_manager._signal_shape_in_array
         #first_pca = to_numpy(factors[:, 1].reshape(shape))
         #im = ax.imshow(first_pca, cmap=matplotlib.cm.gray, interpolation='nearest', extent=None)
