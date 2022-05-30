@@ -2,6 +2,8 @@ import sys
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtGui as qtg
+from pyqtgraph import mkPen
+from scipy.signal import savgol_filter
 
 import ABLE
 from MultiPageTIFFViewerQt import MultiPageTIFFViewerQt
@@ -17,6 +19,10 @@ import CNMFE
 import PCA
 import ABLE
 
+from scipy import signal
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.metrics import mean_squared_error, r2_score
 
 class PixelTemporalVariation(qtw.QWidget):
 
@@ -31,18 +37,50 @@ class PixelTemporalVariation(qtw.QWidget):
         # value of the darkness due to the microscope is the average of the first 5x5 pixel
         # square at the top of the image over the whole stack
 
-        value_of_darkness = np.mean(imfile[:, 1:5, 1:5])
-        extracted_temporal_trace = imfile[:, x, y]
-        f_0 = np.mean(imfile)
-        extracted_temporal_trace = (extracted_temporal_trace - f_0) / (f_0 - value_of_darkness)
-
         # using the acquisition rate, tranform the x axis from frame numbet to seconds
         timescale = np.arange(0, imfile.shape[0] / acquisition_rate, 1 / acquisition_rate)
+
+        value_of_darkness = np.mean(imfile[:, 1:5, 1:5])
+        print('value_of_darkness  ', value_of_darkness)
+
+        temp = imfile[:, x-10:x+9, y-10:y+9]
+        print('temp  ', temp.shape)
+        extracted_temporal_trace = np.mean(temp, axis=1)
+        extracted_temporal_trace = np.mean(extracted_temporal_trace, axis=1)
+
+        # detrend data
+        pf = PolynomialFeatures(degree=2)
+        timescale2 = np.reshape(timescale, (len(timescale), 1))
+        Xp = pf.fit_transform(timescale2)
+        md2 = LinearRegression()
+        md2.fit(Xp, extracted_temporal_trace)
+        trendp = md2.predict(Xp)
+        extracted_temporal_trace = extracted_temporal_trace - trendp
+
+
+        # extracted_temporal_trace = np.mean(imfile[:, x-2:x+2, y-2:y+2], axis=1)
+        # print('extracted trace ', extracted_temporal_trace.shape)
+        f_0 = np.mean(extracted_temporal_trace)  #np.mean(imfile[:, x-20:x+19, y-20:y+19])  # PIXEL MEAN OF 500 stacks!!!!
+        print('shape f0', f_0)
+
+        # extracted_temporal_trace = imfile[:, x, y]
+        # f_0 = np.mean(imfile[:, x, y]) # PIXEL MEAN OF 500 stacks!!!!
+        # extracted_temporal_trace_2 = 100*(extracted_temporal_trace - f_0) / (f_0 - value_of_darkness)
+        # print(extracted_temporal_trace_2)
+        yhat = savgol_filter(extracted_temporal_trace, 5, 2)
+
+        # PLOT THOSE FOR RESULTS
+        # extracted_temporal_trace_2 = signal.detrend(extracted_temporal_trace_2, type='constant')
+        # extracted_temporal_trace_2 = signal.detrend(extracted_temporal_trace_2, type='linear')
+
 
         graphWidget = pg.PlotWidget()
         pen = pg.mkPen(color=(255, 0, 0), width=1)
         graphWidget.setBackground('w')
-        graphWidget.plot(timescale, extracted_temporal_trace, pen=pen)
+        #graphWidget.plot(timescale, extracted_temporal_trace, pen=pen)
+        graphWidget.plot(timescale, yhat, pen='b', width='3')
+        # graphWidget.plot(timescale, extracted_temporal_trace + trendp, pen=pen)
+        graphWidget.setXRange(0, imfile.shape[0] / acquisition_rate)
         graphWidget.showGrid(x=True, y=True)
         graphWidget.setTitle("Temporal Trace of (" + str(x) + "," + str(y) + f") of {filename}", size="30pt")
         styles = {'color': 'b', 'font-size': '20px'}
