@@ -14,6 +14,14 @@ class CNMFE_class():
                  ring_size_factor_IN, merge_threshold_IN, num_threads_IN, processing_mode_IN,
                  patch_size_IN, patch_overlap_IN,  deconvolve_IN, output_units_IN, output_filetype_IN, verbose_IN):
 
+        # save the footprints and temporal traces of each neurons as a png in a dedicated folder
+        # make the dedicated folder and if already exists, delete the previous one
+        dir = 'CNMFE_results_' + str(filename)
+        dir, temp = os.path.splitext(dir)  # removes the .tif
+        if os.path.exists(dir):
+            shutil.rmtree(dir)
+        os.makedirs(dir)
+
         # store the parameters in a dictionary:
         s = {'input_movie_path': filename,
              'output_dir_path': 'output',
@@ -38,7 +46,8 @@ class CNMFE_class():
         # convert the parameters to an xml file:
         # e stores the element instance
         e = self.dictionary_to_xml('parameters', s)
-        f = open("parameters.xml", "wb")
+        completeName = os.path.join(dir, "parameters.xml")
+        f = open(completeName, "wb")
         f.write(tostring(e))
         f.close()
 
@@ -66,13 +75,6 @@ class CNMFE_class():
         )
 
 
-        # save the footprints and temporal traces of each neurons as a png in a dedicated folder
-        # make the dedicated folder and if already exists, delete the previous one
-        dir = 'CNMFE_results_' + str(filename)
-        dir, temp = os.path.splitext(dir) # removes the .tif
-        if os.path.exists(dir):
-            shutil.rmtree(dir)
-        os.makedirs(dir)
 
         for neuron_index in range(self.footprints.shape[0]):
             fig, axes = plt.subplots(1, 2, figsize=(10, 2), gridspec_kw={'width_ratios': [1, 3]})
