@@ -4,6 +4,7 @@ import inscopix_cnmfe
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib import cm
+from xml.etree.ElementTree import Element,tostring
 
 
 class CNMFE_class():
@@ -12,6 +13,34 @@ class CNMFE_class():
                  gaussian_kernel_size_IN, closing_kernel_size_IN, background_downsampling_factor_IN,
                  ring_size_factor_IN, merge_threshold_IN, num_threads_IN, processing_mode_IN,
                  patch_size_IN, patch_overlap_IN,  deconvolve_IN, output_units_IN, output_filetype_IN, verbose_IN):
+
+        # store the parameters in a dictionary:
+        s = {'input_movie_path': filename,
+             'output_dir_path': 'output',
+             'output_filetype': output_filetype_IN,
+             'average_cell_diameter': average_cell_diameter_IN,  # 7(default)->3, 15 -> 5, 20 -> 5
+             'min_pixel_correlation': min_pixel_correlation_IN,  # 0.8
+             'min_peak_to_noise_ratio': min_peak_to_noise_ratio_IN,  # 10.0,
+             'gaussian_kernel_size': gaussian_kernel_size_IN,  # 0,
+             'closing_kernel_size': closing_kernel_size_IN,  # ,0
+             'background_downsampling_factor': background_downsampling_factor_IN,  # 2,
+             'ring_size_factor': ring_size_factor_IN,  # 1.4,
+             'merge_threshold': merge_threshold_IN,  # 0.7,
+             'num_threads': num_threads_IN,  # 4,
+             'processing_mode': processing_mode_IN,  # 2,
+             'patch_size': patch_size_IN,  # 80,
+             'patch_overlap': patch_overlap_IN,  # 20,
+             'output_units': output_units_IN,  # 1,
+             'deconvolve': deconvolve_IN,  # 0,
+             'verbose': verbose_IN,  # 1
+             }
+
+        # convert the parameters to an xml file:
+        # e stores the element instance
+        e = self.dictionary_to_xml('parameters', s)
+        f = open("parameters.xml", "wb")
+        f.write(tostring(e))
+        f.close()
 
         # perform the CNMFE algporithm and store the results in the footprints and traces variables.
         # the CNMFE_class object requires the filename if the tiff stack on which it performs the CNMFE
@@ -66,6 +95,7 @@ class CNMFE_class():
             plt.savefig(name, dpi=1200)
             # allows to not display the individual ones
             plt.close(fig)
+
 
     def plot_footprints_on_grid(self, footprints, n_cols=10):
         '''
@@ -240,3 +270,17 @@ class CNMFE_class():
 
         plt.show()
 
+    # convert a simple dictionary
+    # of key/value pairs into XML
+    # credit: https://www.geeksforgeeks.org/turning-a-dictionary-into-xml-in-python/
+    def dictionary_to_xml(self, tag, d):
+
+        elem = Element(tag)
+        for key, val in d.items():
+            # create an Element
+            # class object
+            child = Element(key)
+            child.text = str(val)
+            elem.append(child)
+
+        return elem
