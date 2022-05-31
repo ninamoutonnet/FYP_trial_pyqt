@@ -16,8 +16,15 @@ class CNMFE_class():
 
         # save the footprints and temporal traces of each neurons as a png in a dedicated folder
         # make the dedicated folder and if already exists, delete the previous one
-        dir = 'CNMFE_results_' + str(filename)
-        dir, temp = os.path.splitext(dir)  # removes the .tif
+        dir_general = 'RESULTS_' + str(filename)
+        dir_general, temp = os.path.splitext(dir_general)  # removes the .tif
+        if os.path.exists(dir_general):
+            pass
+        else:
+            # the general directory does not exist, so create it
+            os.makedirs(dir_general)
+
+        dir = str(dir_general) + '/CNMFE_results'
         if os.path.exists(dir):
             shutil.rmtree(dir)
         os.makedirs(dir)
