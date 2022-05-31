@@ -4,12 +4,40 @@ import matlab.engine
 import numpy as np
 import matplotlib.pyplot as plt
 import os
-
+from xml.etree.ElementTree import Element,tostring
 
 
 class ABLE_class():
 
     def __init__(self, filename, radius, alpha, blur_radius, lambda_param, mergeCorr, metric, maxlt):
+
+        # save the footprints and temporal traces of each neurons as a png in a dedicated folder
+        # make the dedicated folder and if already exists, delete the previous one
+        dir = 'ABLE_results_' + str(filename)
+        dir, temp = os.path.splitext(dir)  # removes the .tif
+        if os.path.exists(dir):
+            shutil.rmtree(dir)
+        os.makedirs(dir)
+
+
+        # store the parameters in a dictionary:
+        s = {'filename': filename,
+             'radius': radius,
+             'alpha': alpha,
+             'blur_radius': blur_radius,
+             'lambda_param': lambda_param,
+             'mergeCorr': mergeCorr,
+             'metric': metric,  # 0,
+             'maxlt': maxlt
+             }
+
+        # convert the parameters to an xml file:
+        # e stores the element instance
+        e = self.dictionary_to_xml('parameters', s)
+        completeName = os.path.join(dir, "parameters.xml")
+        f = open(completeName, "wb")
+        f.write(tostring(e))
+        f.close()
 
         # filename = 'Copy_of_multipage_tif_resized.tif'
         eng = matlab.engine.start_matlab()
@@ -28,14 +56,6 @@ class ABLE_class():
         print(corrIm.shape)
         print(smaller_ROIs.shape)
         print(larger_ROI.shape)'''
-
-        # save the footprints and temporal traces of each neurons as a png in a dedicated folder
-        # make the dedicated folder and if already exists, delete the previous one
-        dir = 'ABLE_results_' + str(filename)
-        dir, temp = os.path.splitext(dir) # removes the .tif
-        if os.path.exists(dir):
-            shutil.rmtree(dir)
-        os.makedirs(dir)
 
         # set the intensity of the mask to 0 if it is false
         masks = np.ma.masked_where(masks == False, masks)
@@ -63,6 +83,20 @@ class ABLE_class():
             # allows to not display the individual plots when generating them
             plt.close(fig)
 
+            # convert a simple dictionary
+            # of key/value pairs into XML
+            # credit: https://www.geeksforgeeks.org/turning-a-dictionary-into-xml-in-python/
 
+    def dictionary_to_xml(self, tag, d):
+
+        elem = Element(tag)
+        for key, val in d.items():
+            # create an Element
+            # class object
+            child = Element(key)
+            child.text = str(val)
+            elem.append(child)
+
+        return elem
 
 

@@ -55,8 +55,27 @@ class PixelTemporalVariation(qtw.QWidget):
         md2 = LinearRegression()
         md2.fit(Xp, extracted_temporal_trace)
         trendp = md2.predict(Xp)
-        extracted_temporal_trace = extracted_temporal_trace - trendp
+        # extracted_temporal_trace = extracted_temporal_trace - trendp
 
+        # try to remove the surroundings
+        tempLeft = imfile[:, x - 16:x - 11, y - 10:y + 9]
+        tempRight = imfile[:, x + 10:x + 15, y - 10:y + 9]
+        tempTop = imfile[:, x-10:x+9, y + 10:y+15]
+        tempBottom = imfile[:, x - 10:x + 9, y - 16:y - 11]
+        extracted_temporal_trace_letf = np.mean(tempLeft, axis=1)
+        extracted_temporal_trace_letf = np.mean(extracted_temporal_trace_letf, axis=1)
+        extracted_temporal_trace_right = np.mean(tempRight, axis=1)
+        extracted_temporal_trace_right = np.mean(extracted_temporal_trace_right, axis=1)
+        extracted_temporal_trace_top = np.mean(tempTop, axis=1)
+        extracted_temporal_trace_top = np.mean(extracted_temporal_trace_top, axis=1)
+        extracted_temporal_trace_bottom = np.mean(tempBottom, axis=1)
+        extracted_temporal_trace_bottom = np.mean(extracted_temporal_trace_bottom, axis=1)
+        outside = (extracted_temporal_trace_letf+extracted_temporal_trace_right+extracted_temporal_trace_top+extracted_temporal_trace_bottom)/4
+
+
+        print('temp  ', temp.shape)
+        extracted_temporal_trace = np.mean(temp, axis=1)
+        extracted_temporal_trace = np.mean(extracted_temporal_trace, axis=1)
 
         # extracted_temporal_trace = np.mean(imfile[:, x-2:x+2, y-2:y+2], axis=1)
         # print('extracted trace ', extracted_temporal_trace.shape)
@@ -76,9 +95,11 @@ class PixelTemporalVariation(qtw.QWidget):
 
         graphWidget = pg.PlotWidget()
         pen = pg.mkPen(color=(255, 0, 0), width=1)
+        pen2 = pg.mkPen(color=(0, 0, 255), width=1)
         graphWidget.setBackground('w')
-        #graphWidget.plot(timescale, extracted_temporal_trace, pen=pen)
-        graphWidget.plot(timescale, yhat, pen='b', width='3')
+        graphWidget.plot(timescale, extracted_temporal_trace - outside, pen=pen)
+        # graphWidget.plot(timescale, outside, pen=pen2)
+        # graphWidget.plot(timescale, yhat, pen='b', width='3')
         # graphWidget.plot(timescale, extracted_temporal_trace + trendp, pen=pen)
         graphWidget.setXRange(0, imfile.shape[0] / acquisition_rate)
         graphWidget.showGrid(x=True, y=True)
