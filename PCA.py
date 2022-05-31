@@ -60,6 +60,22 @@ def to_numpy(array):
 class PCA_class():
 
     def __init__(self, filename):
+
+        # save the footprints and temporal traces of each neurons as a png in a dedicated folder
+        # make the dedicated folder and if already exists, delete the previous one
+        dir_general = 'RESULTS_' + str(filename)
+        dir_general, temp = os.path.splitext(dir_general)  # removes the .tif
+        if os.path.exists(dir_general):
+            pass
+        else:
+            # the general directory does not exist, so create it
+            os.makedirs(dir_general)
+
+        dir = str(dir_general) + '/PCA_results'
+        if os.path.exists(dir):
+            shutil.rmtree(dir)
+        os.makedirs(dir)
+
         # Load the smaller tiff as s using the hyperspy library
         s = hs.load(filename)
         print(s)
@@ -109,7 +125,6 @@ class PCA_class():
         plt.savefig("PCA_loadings_9.png", format="png", dpi=1200)
         plt.show()'''
 
-
         '''# does not work - runs test
         z_value = np.zeros((loadings.shape[1], 1))
         a_value = np.zeros((loadings.shape[1], 1))
@@ -139,8 +154,6 @@ class PCA_class():
             std[i] = np.std(loadings[:, i])
         plt.plot(std)
         plt.show()'''
-
-
 
         # how many values are above/below the average?
         diff = np.zeros((loadings.shape[1], 1))
@@ -173,16 +186,9 @@ class PCA_class():
             limit = boundarie[0][0]
             print('First Index of element >=0 ', limit)
 
-        #create directory to save the file
-        dir = 'PCA_results_' + str(filename)
-        dir, temp = os.path.splitext(dir)  # removes the .tif
-        if os.path.exists(dir):
-            shutil.rmtree(dir)
-        os.makedirs(dir)
-
-
         for neuron_index in range(limit-1):
-            neuron_index = neuron_index + 1 #avoid i=0
+
+            neuron_index = neuron_index + 1 # avoid i=0
             fig, axes = plt.subplots(1, 2, figsize=(10, 2), gridspec_kw={'width_ratios': [1, 3]})
 
             # spatial footprint
@@ -207,10 +213,10 @@ class PCA_class():
             plt.close(fig)
 
         print('done')
-        #shape = s.axes_manager._signal_shape_in_array
-        #first_pca = to_numpy(factors[:, 1].reshape(shape))
-        #im = ax.imshow(first_pca, cmap=matplotlib.cm.gray, interpolation='nearest', extent=None)
-        #plt.colorbar(im)
-        #plt.show()
+        # shape = s.axes_manager._signal_shape_in_array
+        # first_pca = to_numpy(factors[:, 1].reshape(shape))
+        # im = ax.imshow(first_pca, cmap=matplotlib.cm.gray, interpolation='nearest', extent=None)
+        # plt.colorbar(im)
+        # plt.show()
 
         return
