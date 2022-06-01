@@ -24,6 +24,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.metrics import mean_squared_error, r2_score
 
+
 class PixelTemporalVariation(qtw.QWidget):
 
     def __init__(self, x, y, filename, acquisition_rate):
@@ -43,7 +44,7 @@ class PixelTemporalVariation(qtw.QWidget):
         value_of_darkness = np.mean(imfile[:, 1:5, 1:5])
         print('value_of_darkness  ', value_of_darkness)
 
-        temp = imfile[:, x-10:x+9, y-10:y+9]
+        temp = imfile[:, x - 10:x + 9, y - 10:y + 9]
         print('temp  ', temp.shape)
         extracted_temporal_trace = np.mean(temp, axis=1)
         extracted_temporal_trace = np.mean(extracted_temporal_trace, axis=1)
@@ -60,7 +61,7 @@ class PixelTemporalVariation(qtw.QWidget):
         # try to remove the surroundings
         tempLeft = imfile[:, x - 16:x - 11, y - 10:y + 9]
         tempRight = imfile[:, x + 10:x + 15, y - 10:y + 9]
-        tempTop = imfile[:, x-10:x+9, y + 10:y+15]
+        tempTop = imfile[:, x - 10:x + 9, y + 10:y + 15]
         tempBottom = imfile[:, x - 10:x + 9, y - 16:y - 11]
         extracted_temporal_trace_letf = np.mean(tempLeft, axis=1)
         extracted_temporal_trace_letf = np.mean(extracted_temporal_trace_letf, axis=1)
@@ -70,8 +71,8 @@ class PixelTemporalVariation(qtw.QWidget):
         extracted_temporal_trace_top = np.mean(extracted_temporal_trace_top, axis=1)
         extracted_temporal_trace_bottom = np.mean(tempBottom, axis=1)
         extracted_temporal_trace_bottom = np.mean(extracted_temporal_trace_bottom, axis=1)
-        outside = (extracted_temporal_trace_letf+extracted_temporal_trace_right+extracted_temporal_trace_top+extracted_temporal_trace_bottom)/4
-
+        outside = (
+                              extracted_temporal_trace_letf + extracted_temporal_trace_right + extracted_temporal_trace_top + extracted_temporal_trace_bottom) / 4
 
         print('temp  ', temp.shape)
         extracted_temporal_trace = np.mean(temp, axis=1)
@@ -79,7 +80,8 @@ class PixelTemporalVariation(qtw.QWidget):
 
         # extracted_temporal_trace = np.mean(imfile[:, x-2:x+2, y-2:y+2], axis=1)
         # print('extracted trace ', extracted_temporal_trace.shape)
-        f_0 = np.mean(extracted_temporal_trace)  #np.mean(imfile[:, x-20:x+19, y-20:y+19])  # PIXEL MEAN OF 500 stacks!!!!
+        f_0 = np.mean(
+            extracted_temporal_trace)  # np.mean(imfile[:, x-20:x+19, y-20:y+19])  # PIXEL MEAN OF 500 stacks!!!!
         print('shape f0', f_0)
 
         # extracted_temporal_trace = imfile[:, x, y]
@@ -91,7 +93,6 @@ class PixelTemporalVariation(qtw.QWidget):
         # PLOT THOSE FOR RESULTS
         # extracted_temporal_trace_2 = signal.detrend(extracted_temporal_trace_2, type='constant')
         # extracted_temporal_trace_2 = signal.detrend(extracted_temporal_trace_2, type='linear')
-
 
         graphWidget = pg.PlotWidget()
         pen = pg.mkPen(color=(255, 0, 0), width=1)
@@ -747,6 +748,8 @@ class MainWindow(qtw.QWidget):
         # check that the sampling rate is an integer between 1 and 1000 HZ
         self.sampling_rate_value_widget.setValidator(qtg.QIntValidator(1, 1000))
 
+        self.micron_per_pixel_widget = qtw.QLineEdit()
+
         # create the 'base' widget on which all the other widgets will be
         central_QWidget = qtw.QWidget()
 
@@ -757,7 +760,18 @@ class MainWindow(qtw.QWidget):
 
         layout_2 = qtw.QHBoxLayout()
         central_QWidget.setLayout(layout_2)
-        layout_2.addWidget(self.stackViewer)
+
+        leftlayout = qtw.QVBoxLayout()
+        leftWidget = qtw.QWidget()
+        leftWidget.setLayout(leftlayout)
+        leftlayout.addWidget(self.stackViewer)
+        self.size = self.width_input_file #default
+        self.unit = 'pixels' #default
+        self.fov_label = qtw.QLabel(f'FOV = {self.size} {self.unit} x {self.size} {self.unit}')
+        self.fov_label.setAlignment(QtCore.Qt.AlignCenter)
+        leftlayout.addWidget(self.fov_label)
+
+        layout_2.addWidget(leftWidget)
         right_layout = qtw.QVBoxLayout()
         layout_2.addLayout(right_layout)
 
@@ -777,6 +791,8 @@ class MainWindow(qtw.QWidget):
         layout3.addLayout(variable_layout)
         variable_layout.addRow('Downsampling value', self.downsample_value_widget)
         variable_layout.addRow('Acquisition rate in Hz', self.sampling_rate_value_widget)
+        variable_layout.addRow('micron/pixel', self.micron_per_pixel_widget)
+
         right_layout.addWidget(metadata_widget)
 
         simple_processing_widget = qtw.QGroupBox('Quick overview')
@@ -836,6 +852,20 @@ class MainWindow(qtw.QWidget):
         button_PCA.clicked.connect(self.pca_trial)
 
         button_ABLE.clicked.connect(self.able_trial)
+
+        # as soon as the micron per pixel box has text in it, change the FOV under the tiff stack
+        self.micron_per_pixel_widget.textChanged.connect(self.line_edit_text_changed)
+
+
+    def line_edit_text_changed(self):
+        if not self.micron_per_pixel_widget.text() :
+            self.fov_label.setText(f'FOV = {self.width_input_file} pixel x {self.width_input_file} pixel')
+        else:
+            self.size_micrometer = float(self.micron_per_pixel_widget.text())*float(self.width_input_file)
+            # multiply by the number of pixels
+            self.unit = 'micro meter'
+            self.fov_label.setText(f'FOV = {self.size_micrometer} {self.unit} x {self.size_micrometer} {self.unit}')
+        return
 
     def able_trial(self):
         # extract the info from the main GUI window
