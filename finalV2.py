@@ -1,4 +1,6 @@
 import sys
+
+import PyQt5
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtGui as qtg
@@ -814,6 +816,18 @@ class MainWindow(qtw.QWidget):
         complex_processing_layout.addWidget(button_PCA)
         complex_processing_layout.addWidget(button_ABLE)
         complex_processing_layout.addWidget(button_CNMFE)
+
+        # use self as this will have to be modified from classes performing the analysis
+        progress_bar_widget = PyQt5.QtWidgets.QProgressBar()
+        progress_bar_widget.setStyleSheet("QProgressBar::chunk { background-color: green; }")
+        progress_bar_widget.setRange(0, 100)
+        progress_bar_widget.setTextVisible(True)
+        # self.progress_bar_widget.setFormat("%v%")
+        progress_bar_widget.setFormat('Ready to begin the analysis   %p%')
+        progress_bar_widget.setAlignment(QtCore.Qt.AlignCenter)
+        progress_bar_widget.setValue(70)
+        right_layout.addWidget(progress_bar_widget)
+
 
         complex_processing_widget.setSizePolicy(
             qtw.QSizePolicy.Preferred,
