@@ -749,6 +749,8 @@ class MainWindow(qtw.QWidget):
         self.sampling_rate_value_widget.setValidator(qtg.QIntValidator(1, 1000))
 
         self.micron_per_pixel_widget = qtw.QLineEdit()
+        # only accept floats/digits up to 2 decimal places, not text
+        self.micron_per_pixel_widget.setValidator(qtg.QDoubleValidator(0, 100, 2))
 
         # create the 'base' widget on which all the other widgets will be
         central_QWidget = qtw.QWidget()
@@ -858,7 +860,7 @@ class MainWindow(qtw.QWidget):
 
 
     def line_edit_text_changed(self):
-        if not self.micron_per_pixel_widget.text() :
+        if not self.micron_per_pixel_widget.text():
             self.fov_label.setText(f'FOV = {self.width_input_file} pixel x {self.width_input_file} pixel')
         else:
             self.size_micrometer = float(self.micron_per_pixel_widget.text())*float(self.width_input_file)
