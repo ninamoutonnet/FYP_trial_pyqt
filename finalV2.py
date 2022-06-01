@@ -793,7 +793,7 @@ class MainWindow(qtw.QWidget):
         layout3.addLayout(variable_layout)
         variable_layout.addRow('Downsampling value', self.downsample_value_widget)
         variable_layout.addRow('Acquisition rate in Hz', self.sampling_rate_value_widget)
-        variable_layout.addRow('micron/pixel', self.micron_per_pixel_widget)
+        variable_layout.addRow('\u03BC/pixel', self.micron_per_pixel_widget)
 
         right_layout.addWidget(metadata_widget)
 
@@ -865,7 +865,7 @@ class MainWindow(qtw.QWidget):
         else:
             self.size_micrometer = float(self.micron_per_pixel_widget.text())*float(self.width_input_file)
             # multiply by the number of pixels
-            self.unit = 'micro meter'
+            self.unit = '\u03BCm'
             self.fov_label.setText(f'FOV = {self.size_micrometer} {self.unit} x {self.size_micrometer} {self.unit}')
         return
 
