@@ -88,9 +88,9 @@ class PCA_class():
             s.decomposition(algorithm="SVD", centre="navigation")
 
         # get the results of the decomposition
-        factors = s.learning_results.factors
-        loadings = s.learning_results.loadings
-        loadings = to_numpy(loadings)
+        self.factors = s.learning_results.factors
+        self.loadings = s.learning_results.loadings
+        self.loadings = to_numpy(self.loadings)
 
         ####################
         ### REPORT PLOTS ###
@@ -156,9 +156,9 @@ class PCA_class():
         plt.show()'''
 
         # how many values are above/below the average?
-        diff = np.zeros((loadings.shape[1], 1))
-        for i in range(loadings.shape[1]):
-            loadings2 = np.copy(loadings)
+        diff = np.zeros((self.loadings.shape[1], 1))
+        for i in range(self.loadings.shape[1]):
+            loadings2 = np.copy(self.loadings)
             mean = np.mean(loadings2[:, i])
             loadings2[:, i].sort()
             strictly_above = len(loadings2[:, i]) - bisect(loadings2[:, i], mean)
@@ -183,17 +183,17 @@ class PCA_class():
         boundarie = np.where(diff >= 0)
         if len(boundarie) > 0 and len(boundarie[0]) > 0:
             # assume you always enter the loop
-            limit = boundarie[0][0]
-            print('First Index of element >=0 ', limit)
+            self.limit = boundarie[0][0]
+            print('First Index of element >=0 ', self.limit)
 
-        for neuron_index in range(limit-1):
+        for neuron_index in range(self.limit-1):
 
             neuron_index = neuron_index + 1 # avoid i=0
             fig, axes = plt.subplots(1, 2, figsize=(10, 2), gridspec_kw={'width_ratios': [1, 3]})
 
             # spatial footprint
-            shape = s.axes_manager._signal_shape_in_array
-            factor_im = to_numpy(factors[:, neuron_index].reshape(shape))
+            self.shape = s.axes_manager._signal_shape_in_array
+            factor_im = to_numpy(self.factors[:, neuron_index].reshape(self.shape))
             axes[0].imshow(factor_im)
             axes[0].set_title("PCA factor, spatial footprint", fontsize=5)
             axes[0].grid(False)
@@ -202,7 +202,7 @@ class PCA_class():
 
             # temporal dynamics
             axes[1].set_title("Loading factor", fontsize=5)
-            axes[1].plot(loadings[:, neuron_index], label='neuron {0}'.format(neuron_index), color='blue')
+            axes[1].plot(self.loadings[:, neuron_index], label='neuron {0}'.format(neuron_index), color='blue')
             axes[1].set_ylabel("A.U", fontsize=5)
             axes[1].set_xlabel("frame number", fontsize=5)
             axes[1].grid()
@@ -220,3 +220,36 @@ class PCA_class():
         # plt.show()
 
         return
+
+    def plot_summary(self):
+
+        number_neurons_detected = self.limit-1
+
+        for neuron_index in range(self.limit-1):
+
+            neuron_index = neuron_index + 1 # avoid i=0
+
+            ax1 = plt.subplot2grid((number_neurons_detected, 4), (neuron_index-1, 0), colspan=1)
+            ax2 = plt.subplot2grid((number_neurons_detected, 4), (neuron_index-1, 1), colspan=3)
+
+            # spatial footprint
+            factor_im = to_numpy(self.factors[:, neuron_index].reshape(self.shape))
+            ax1.imshow(factor_im)
+            ax1.set_title("PCA factor, spatial footprint", fontsize=5)
+            ax1.grid(False)
+            ax1.set_xticks([])
+            ax1.set_yticks([])
+
+            # temporal dynamics
+            ax2.set_title("Loading factor", fontsize=5)
+            ax2.plot(self.loadings[:, neuron_index], label='neuron {0}'.format(neuron_index), color='blue')
+            ax2.set_ylabel("A.U", fontsize=5)
+            ax2.set_xlabel("frame number", fontsize=5)
+            ax2.grid()
+
+        plt.show()
+
+
+
+
+

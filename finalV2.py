@@ -343,6 +343,7 @@ class ABLE_GUI(qtw.QWidget):
         print(f'OK - RUNNING ABLE')
         #  create a new CNMFE object, give it the resized filename as input
         able_object = ABLE.ABLE_class(self.filename, radius, alpha, blur_radius, lambda_param, mergeCorr, metric, maxlt)
+        able_object.plot_summary()
 
 
 class CNMFE_GUI(qtw.QWidget):
@@ -637,6 +638,7 @@ class PCA_GUI(qtw.QWidget):
         print(filename)
         # perform PCA
         pca_object = PCA.PCA_class(self.filename)
+        pca_object.plot_summary()
 
 
 class MainWindow(qtw.QWidget):
