@@ -208,7 +208,7 @@ class PCA_class():
             axes[1].grid()
 
             name = dir + '/PCA_results_' + str(neuron_index)
-            plt.savefig(name, dpi=1200)
+            plt.savefig(name, dpi=1500)
             # allows to not display the individual ones
             plt.close(fig)
 

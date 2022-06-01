@@ -768,7 +768,7 @@ class MainWindow(qtw.QWidget):
         leftWidget.setLayout(leftlayout)
         leftlayout.addWidget(self.stackViewer)
         self.size = self.width_input_file #default
-        self.unit = 'pixels' #default
+        self.unit = 'pixel' #default
         self.fov_label = qtw.QLabel(f'FOV = {self.size} {self.unit} x {self.size} {self.unit}')
         self.fov_label.setAlignment(QtCore.Qt.AlignCenter)
         leftlayout.addWidget(self.fov_label)
@@ -843,30 +843,31 @@ class MainWindow(qtw.QWidget):
         #  end main UI code - Display the UI
         self.show()
 
+        ''' INTERACTIVE '''
         #  If the button for fluorescence is pressed, open a new window
         button.clicked.connect(self.windowFluo)
         #  If the button is pressed, open a new window
         button_pixel_intensity_var.clicked.connect(self.WindowIntensityVariation)
         #  If the for CNMFE is pressed, open a new window
-        #        button_CNMFE.clicked.connect(self.CNMFE_instance)
         button_CNMFE.clicked.connect(self.cnmfe_trial)
-
+        #  If the for PCA is pressed, open a new window
         button_PCA.clicked.connect(self.pca_trial)
-
+        #  If the for ABLE is pressed, open a new window
         button_ABLE.clicked.connect(self.able_trial)
-
         # as soon as the micron per pixel box has text in it, change the FOV under the tiff stack
         self.micron_per_pixel_widget.textChanged.connect(self.line_edit_text_changed)
 
 
     def line_edit_text_changed(self):
         if not self.micron_per_pixel_widget.text():
-            self.fov_label.setText(f'FOV = {self.width_input_file} pixel x {self.width_input_file} pixel')
+            self.unit = 'pixel'
+            self.size = self.width_input_file
         else:
-            self.size_micrometer = float(self.micron_per_pixel_widget.text())*float(self.width_input_file)
             # multiply by the number of pixels
+            self.size = float(self.micron_per_pixel_widget.text())*float(self.width_input_file)
             self.unit = '\u03BCm'
-            self.fov_label.setText(f'FOV = {self.size_micrometer} {self.unit} x {self.size_micrometer} {self.unit}')
+
+        self.fov_label.setText(f'FOV = {self.size} {self.unit} x {self.size} {self.unit}')
         return
 
     def able_trial(self):
