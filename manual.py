@@ -1,55 +1,53 @@
-
-
-# Now that you have resized the whole stack, start the processing
-# Read the image from the TIFF file as numpy array:
 import numpy as np
 from matplotlib import pyplot as plt
-from mpmath import linspace, atan
+from mpmath import linspace
 from scipy.ndimage import gaussian_filter
 from tifffile import tifffile
-from skimage import io
 
-'''
+# read the downsampled .tiff file, store it in imfile as a numpy array
 imfile = tifffile.imread('Downsampled_s1a2d1_WF_1P_1x1_300mA_100Hz_func_500frames_4AP_2_MMStack_Default.ome.tif')
 
-# Take the mean, pixel per pixel of the whole image
-#mean_img = imfile.mean(axis=0)
-#plt.gray()
+# store the data in a temp array, use a high pass filter on all the 500 frames,
+# take a time average of that high-pass image (stored in temp_file_mean)
+temp_file = np.copy(imfile)
+temp_file = gaussian_filter(temp_file, sigma=3) #500, 1024, 1024
+temp_file_mean = np.mean(temp_file, axis=0)# 1, 1024, 1024
+tifffile.imwrite('temp_file_mean.tif', temp_file_mean, photometric='minisblack')
 
-# Create the np array that will be the map
-heat_map_np_array = np.copy(imfile)
-heat_map_np_array = gaussian_filter(heat_map_np_array, sigma=3) #500, 1024, 1024
-heat_map_np_array_mean = np.mean(heat_map_np_array, axis=0)# 1, 1024, 1024
+# remove the background to the data, frame by frame
+gauss_highpass = imfile - temp_file
+tifffile.imwrite('gauss_highpass.tif', gauss_highpass, photometric='minisblack')
 
-
-gauss_highpass = imfile - heat_map_np_array
-gauss_highpass_mean = imfile - heat_map_np_array_mean # GOOD ONE
+# remove the background (that mean high pass filter image) to the data
+gauss_highpass_mean = imfile - temp_file_mean
+tifffile.imwrite('gauss_highpass_mean.tif', gauss_highpass_mean, photometric='minisblack')
 
 minimum_value = np.min(gauss_highpass_mean)
-gauss_highpass_mean_scaled = gauss_highpass_mean + abs(minimum_value)
+# find the minimum value of gray, and scale the data such that it becomes 0
+gauss_highpass_mean_scaled = gauss_highpass_mean - minimum_value
+tifffile.imwrite('gauss_highpass_mean_scaled.tif', gauss_highpass_mean_scaled, photometric='minisblack')
 
+# find the mean intensity of each pixel
 mean_F0 = np.mean(gauss_highpass_mean_scaled, axis=0) #1, 1024, 1024
 # value of darkness due to the microscope -> use the average of the first pixels in the top corner to do so
 value_of_darkness = np.mean(gauss_highpass_mean_scaled[1:199, 1:5, 1:5])
-
+# Delta F / F
 gauss_highpass_mean_scaled_Variation = (gauss_highpass_mean_scaled - mean_F0)/mean_F0
-gauss_highpass_mean_scaled_Variation_Dark = (gauss_highpass_mean_scaled - mean_F0 - value_of_darkness)/mean_F0
+tifffile.imwrite('gauss_highpass_mean_scaled_Variation.tif', gauss_highpass_mean_scaled_Variation, photometric='minisblack')
 
-print('here')
-#tifffile.imwrite('heat_map_np_array_mean.tif', heat_map_np_array_mean, photometric='minisblack')
-#tifffile.imwrite('gauss_highpass.tif', gauss_highpass, photometric='minisblack')
-#tifffile.imwrite('gauss_highpass_mean.tif', gauss_highpass_mean, photometric='minisblack')
-#tifffile.imwrite('gauss_highpass_mean_scaled.tif', gauss_highpass_mean_scaled, photometric='minisblack')
-#tifffile.imwrite('gauss_highpass_mean_scaled_Variation.tif', gauss_highpass_mean_scaled_Variation, photometric='minisblack')
+# (F_pixel - F_0 - dark) / F_0
+gauss_highpass_mean_scaled_Variation_Dark = (gauss_highpass_mean_scaled - mean_F0 - value_of_darkness)/mean_F0
 tifffile.imwrite('gauss_highpass_mean_scaled_Variation_Dark.tif', gauss_highpass_mean_scaled_Variation_Dark, photometric='minisblack')
 
-'''
 #gauss_highpass_mean_scaled_Variation = io.imread('gauss_highpass_mean_scaled_Variation.tif')
 gauss_highpass_mean_scaled_Variation = tifffile.imread('gauss_highpass_mean_scaled_Variation.tif', )
 original_file = tifffile.imread('Downsampled_s1a2d1_WF_1P_1x1_300mA_100Hz_func_500frames_4AP_2_MMStack_Default.ome.tif')
 
-'''# Check the organisation, the array stores the data as Z, Y, X!!
-top_Left = gauss_highpass_mean_scaled_Variation[0, 0, 0]
+##################################################################
+# Check the organisation, the array stores the data as Z, Y, X!! #
+##################################################################
+
+'''top_Left = gauss_highpass_mean_scaled_Variation[0, 0, 0]
 top_Right = gauss_highpass_mean_scaled_Variation[0, 0, 1020]
 bottom_Left = gauss_highpass_mean_scaled_Variation[0, 1022, 0]
 bottom_Right = gauss_highpass_mean_scaled_Variation[0, 1022, 1022]
@@ -60,14 +58,15 @@ print('bottom_Left', bottom_Left)
 print('bottom_Right', bottom_Right)'''
 
 
-gauss_highpass_mean_scaled_Variation_Trace_X_642_Y_408 = gauss_highpass_mean_scaled_Variation[:, 408 , 642]
+##################################################################
+#                       Trace extraction                         #
+##################################################################
+'''gauss_highpass_mean_scaled_Variation_Trace_X_642_Y_408 = gauss_highpass_mean_scaled_Variation[:, 408 , 642]
 original_file_Trace_X_642_Y_408 = original_file[:, 408 , 642]
 
-#'''
-# Initialise the subplot function using number of rows and columns
 figure, axis = plt.subplots(2)
-
 t = linspace(0, 499, 500)
+
 # offset the processed one
 gauss_highpass_mean_scaled_Variation_Trace_X_642_Y_408 = gauss_highpass_mean_scaled_Variation_Trace_X_642_Y_408 - (np.min(gauss_highpass_mean_scaled_Variation_Trace_X_642_Y_408))
 axis[0].plot(gauss_highpass_mean_scaled_Variation_Trace_X_642_Y_408)
@@ -80,9 +79,12 @@ axis[1].set_title('Original')
 axis[1].grid()
 
 plt.show()
-
 '''
 
+##################################################################
+#                       Comparison                               #
+##################################################################
+'''
 gauss_highpass_mean_scaled_Variation_Trace_X_642_Y_408 = gauss_highpass_mean_scaled_Variation_Trace_X_642_Y_408 - np.min(gauss_highpass_mean_scaled_Variation_Trace_X_642_Y_408)
 processed_max = np.max(gauss_highpass_mean_scaled_Variation_Trace_X_642_Y_408)
 
