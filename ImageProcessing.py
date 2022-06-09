@@ -4,8 +4,8 @@ from PIL import TiffImagePlugin
 import numpy as np
 import os
 from matplotlib import pyplot as plt
-import tifffile
-from scipy.ndimage.filters import gaussian_filter
+from tifffile import tifffile
+from scipy.ndimage import gaussian_filter
 
 
 
@@ -15,7 +15,6 @@ def fluoMap(filename, downsample_factor):
     # # # # # # #
 
     # because the naming is automatic and you want a brand new file each time, ensure that no previous version
-
     file_name_no_path = os.path.basename(os.path.normpath(filename))
     name = 'Downsampled_' + file_name_no_path
 
@@ -40,22 +39,28 @@ def fluoMap(filename, downsample_factor):
     # Now that you have resized the whole stack, start the processing
     # Read the image from the TIFF file as numpy array:
     imfile = tifffile.imread(name)
-    # Take the mean, pixel per pixel of the whole image
-    mean_img = imfile.mean(axis=0)
-    plt.gray()
 
-    # Create the np array that will be the map
-    heat_map_np_array = np.copy(imfile)
+    # store the data in a temp array, use a high pass filter on all the 500 frames,
+    # take a time average of that high-pass image (stored in temp_file_mean)
+    temp_file = np.copy(imfile)
+    temp_file = gaussian_filter(temp_file, sigma=3)  # 500, 1024, 1024
+    temp_file_mean = np.mean(temp_file, axis=0)  # 1, 1024, 1024
 
-    # value of darkness due to the microscope -> use the average of the first pixels in the top corner to do so
-    value_of_darkness = np.mean(imfile[1:20, 1:5, 1:5])
+    # remove the background (that mean high pass filter image) to the data
+    gauss_highpass_mean = imfile - temp_file_mean
 
-    for i in range(imfile.shape[0]):
-        heat_map_np_array[i] = abs(imfile[i] - mean_img - value_of_darkness)
-        heat_map_np_array[i] = gaussian_filter(heat_map_np_array[i], sigma=1)
+    # find the minimum value of gray, and scale the data such that it becomes 0
+    minimum_value = np.min(gauss_highpass_mean)
+    gauss_highpass_mean_scaled = gauss_highpass_mean - minimum_value
 
-    OUTFILE = 'average_tif_resized.tif'
-    tifffile.imwrite(OUTFILE, heat_map_np_array, photometric='minisblack')
+    # find the mean intensity of each pixel
+    mean_F0 = np.mean(gauss_highpass_mean_scaled, axis=0)  # 1, 1024, 1024
+    # Delta F / F
+    gauss_highpass_mean_scaled_variation = (gauss_highpass_mean_scaled - mean_F0) / mean_F0
 
+    gauss_highpass_mean_scaled_variation = gauss_highpass_mean_scaled_variation.astype(np.float32)
+    OUTFILE = 'gauss_highpass_mean_scaled_variation.tif'
+    with tifffile.Timer():
+        tifffile.imwrite(OUTFILE, gauss_highpass_mean_scaled_variation, photometric='minisblack')
     return OUTFILE
 
