@@ -30,8 +30,7 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.metrics import mean_squared_error, r2_score
 
 
-
-class PixelTemporalVariation(): #qtw.QWidget):
+class PixelTemporalVariation():
 
     def __init__(self, x, y, filename, acquisition_rate):
         super().__init__()
@@ -123,45 +122,59 @@ class PixelTemporalVariation(): #qtw.QWidget):
                                          extracted_temporal_trace_TRR +
                                          extracted_temporal_trace_BLL +
                                          extracted_temporal_trace_BRR ) / 25
+
+            surrounding_trace_level_1_mean = np.mean(surrounding_trace_level_1, axis=0)
+            surrounding_trace_level_2_mean = np.mean(surrounding_trace_level_2, axis=0)
+            surrounding_trace_level_3_mean = np.mean(surrounding_trace_level_3, axis=0)
+            surrounding_trace_level_4_mean = np.mean(surrounding_trace_level_4, axis=0)
+
+            Delta_F_Over_F_1 = (surrounding_trace_level_1 - surrounding_trace_level_1_mean)/ surrounding_trace_level_1_mean
+            Delta_F_Over_F_2 = (surrounding_trace_level_2 - surrounding_trace_level_2_mean)/ surrounding_trace_level_2_mean
+            Delta_F_Over_F_3 = (surrounding_trace_level_3 - surrounding_trace_level_3_mean)/ surrounding_trace_level_3_mean
+            Delta_F_Over_F_4 = (surrounding_trace_level_4 - surrounding_trace_level_4_mean)/ surrounding_trace_level_4_mean
+
         except:
-            surrounding_trace_level_3 = extracted_temporal_trace
+            surrounding_trace_level_4 = extracted_temporal_trace
+            surrounding_trace_level_4_mean = np.mean(surrounding_trace_level_4, axis=0)
+            Delta_F_Over_F_4 = (surrounding_trace_level_4 - surrounding_trace_level_4_mean)/ surrounding_trace_level_4_mean
+
 
         # PLOT THOSE FOR RESULTS
         plt.rcParams["figure.figsize"] = (8, 4)
-        plt.plot(timescale, surrounding_trace_level_4, 'm', linewidth=1)
+        plt.plot(timescale, Delta_F_Over_F_4, 'm', linewidth=1)
         plt.grid()
         plt.xlabel('Frame number')
-        plt.ylabel('ROI intensity')
-        plt.title(f'Plot showing the intensity variation of an ROI containing 25 pixels, \n'
-                  f'central pixel coordinates = ({x}, {y})')
-        # plt.savefig('ROI_size_variation_25_pixels.pdf', dpi=1500)
+        plt.ylabel('\u0394 F / F')
+        plt.title(f'Plot showing the intensity variation of a ROI containing 25 pixels as a \n'
+                  f'function of frame number, central pixel coordinates = ({x}, {y})')
+        # plt.savefig('ROI_size_variation_25_pixels_DeltaF.pdf', dpi=1500)
         plt.show()
 
-        '''plt.plot(timescale, surrounding_trace_level_3, 'r', linewidth=1)
+        '''plt.plot(timescale, Delta_F_Over_F_3, 'r', linewidth=1)
         plt.grid()
         plt.xlabel('Frame number')
-        plt.ylabel('ROI intensity')
-        plt.title(f'Plot showing the intensity variation of an ROI containing 13 pixels, \n'
-                  f'central pixel coordinates = ({x}, {y})')
-        plt.savefig('ROI_size_variation_13_pixels.pdf', dpi=1500)
+        plt.ylabel('\u0394 F / F')
+        plt.title(f'Plot showing the intensity variation of a ROI containing 13 pixels as a \n'
+                  f'function of frame number, central pixel coordinates = ({x}, {y})')
+        plt.savefig('ROI_size_variation_13_pixels_DeltaF.pdf', dpi=1500)
         plt.show()
 
-        plt.plot(timescale, surrounding_trace_level_2, 'b', linewidth=1)
+        plt.plot(timescale, Delta_F_Over_F_2, 'b', linewidth=1)
         plt.grid()
         plt.xlabel('Frame number')
-        plt.ylabel('ROI intensity')
-        plt.title(f'Plot showing the intensity variation of an ROI containing 5 pixels, \n'
-                  f'central pixel coordinates = ({x}, {y})')
-        plt.savefig('ROI_size_variation_5_pixels.pdf', dpi=1500)
+        plt.ylabel('\u0394 F / F')
+        plt.title(f'Plot showing the intensity variation of a ROI containing 5 pixels as a \n'
+                  f'function of frame number, central pixel coordinates = ({x}, {y})')
+        plt.savefig('ROI_size_variation_5_pixels_DeltaF.pdf', dpi=1500)
         plt.show()
 
-        plt.plot(timescale, surrounding_trace_level_1, 'g', linewidth=1)
+        plt.plot(timescale, Delta_F_Over_F_1, 'g', linewidth=1)
         plt.grid()
         plt.xlabel('Frame number')
-        plt.ylabel('ROI intensity')
-        plt.title(f'Plot showing the intensity variation of an ROI containing 1 pixel, \n'
-                  f'coordinates = ({x}, {y})')
-        plt.savefig('ROI_size_variation_1_pixel.pdf', dpi=1500)
+        plt.ylabel('\u0394 F / F')
+        plt.title(f'Plot showing the intensity variation of a ROI containing 1 pixel, as a \n'
+                  f'function of frame number, coordinates = ({x}, {y})')
+        plt.savefig('ROI_size_variation_1_pixel_DeltaF.pdf', dpi=1500)
         plt.show()'''
 
 
@@ -1058,9 +1071,6 @@ class MainWindow(qtw.QWidget):
             y_coordinate = y * scaling_factor
             x_coordinate = x * scaling_factor
 
-        # print(f'x/y input,  {x}  {y} new coord:  {x_coordinate}  {y_coordinate}')
-        #self.w = PixelTemporalVariation(round(x_coordinate), round(y_coordinate), self.filename, self.get_acquisition_rate())
-        #self.w.show()
         PixelTemporalVariation(round(x_coordinate), round(y_coordinate), self.filename, self.get_acquisition_rate())
 
 
