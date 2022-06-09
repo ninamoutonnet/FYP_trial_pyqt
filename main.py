@@ -1,4 +1,5 @@
 import sys
+import time
 
 import PyQt5
 from PyQt5 import QtCore
@@ -25,6 +26,7 @@ from scipy import signal
 from sklearn.linear_model import LinearRegression
 from sklearn.preprocessing import PolynomialFeatures
 from sklearn.metrics import mean_squared_error, r2_score
+
 
 
 class PixelTemporalVariation(qtw.QWidget):
@@ -140,6 +142,7 @@ class FluorescenceIntensityMap(qtw.QWidget):
         # give the tiff file to the intensity function
         self.fluo_output = fluoMap(filename, downsample_factor)
         self.stackViewer = MultiPageTIFFViewerQt()
+        print('made it here!!, fluo ouput:',self.fluo_output)
         self.stackViewer.loadImageStackFromFile(self.fluo_output)
 
         im = Image.open(self.fluo_output)
@@ -294,6 +297,8 @@ class ABLE_GUI(qtw.QWidget):
         #  end main UI code - Display the UI
         self.show()
 
+        progress_bar_widget.setFormat('Getting parameters')
+        progress_bar_widget.setValue(40)
         #  If the button is pressed, open a new window
         button.clicked.connect(self.get_able_parameters)
 
@@ -344,10 +349,15 @@ class ABLE_GUI(qtw.QWidget):
 
         # second, check the validity. If the input is ok, generate the fluorescence variation map
         print(f'OK - RUNNING ABLE')
+        progress_bar_widget.setFormat('ABLE running')
+        progress_bar_widget.setValue(60)
+
         #  create a new CNMFE object, give it the resized filename as input
         able_object = ABLE.ABLE_class(self.filename, radius, alpha, blur_radius, lambda_param, mergeCorr, metric, maxlt)
         able_object.plot_summary()
 
+        progress_bar_widget.setFormat('Ready to begin the analysis')
+        progress_bar_widget.setValue(0)
 
 class CNMFE_GUI(qtw.QWidget):
 
@@ -817,15 +827,12 @@ class MainWindow(qtw.QWidget):
         complex_processing_layout.addWidget(button_ABLE)
         complex_processing_layout.addWidget(button_CNMFE)
 
-        # use self as this will have to be modified from classes performing the analysis
-        progress_bar_widget = PyQt5.QtWidgets.QProgressBar()
         progress_bar_widget.setStyleSheet("QProgressBar::chunk { background-color: green; }")
         progress_bar_widget.setRange(0, 100)
         progress_bar_widget.setTextVisible(True)
-        # self.progress_bar_widget.setFormat("%v%")
-        progress_bar_widget.setFormat('Ready to begin the analysis   %p%')
         progress_bar_widget.setAlignment(QtCore.Qt.AlignCenter)
-        progress_bar_widget.setValue(70)
+        progress_bar_widget.setFormat('Ready to begin the analysis')
+        progress_bar_widget.setValue(0)
         right_layout.addWidget(progress_bar_widget)
 
 
@@ -888,6 +895,8 @@ class MainWindow(qtw.QWidget):
         # extract the info from the main GUI window
         downsample_factor = self.get_downsampling_value()
         # downsample the file and store it automatically as 'multipage_tif_resized.tif'
+        progress_bar_widget.setFormat('Downsampling the file')
+        progress_bar_widget.setValue(20)
         filename_downsampled = self.downsampling_tiff_stack(self.filename, downsample_factor)
         # use that downsampled file to call the CNMFE
         self.able_window = ABLE_GUI(filename_downsampled)
@@ -1014,5 +1023,10 @@ class MainWindow(qtw.QWidget):
 
 if __name__ == '__main__':
     app = qtw.QApplication(sys.argv)
+
+    '''GLOBAL VAR'''
+    # use self as this will have to be modified from classes performing the analysis
+    progress_bar_widget = PyQt5.QtWidgets.QProgressBar()
+
     mw = MainWindow()
     sys.argv(app.exec())
