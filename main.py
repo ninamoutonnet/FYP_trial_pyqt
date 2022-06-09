@@ -5,6 +5,7 @@ import PyQt5
 from PyQt5 import QtCore
 from PyQt5 import QtWidgets as qtw
 from PyQt5 import QtGui as qtg
+from mpmath import linspace
 from pyqtgraph import mkPen
 from scipy.signal import savgol_filter
 
@@ -21,6 +22,7 @@ import numpy as np
 import CNMFE
 import PCA
 import ABLE
+import matplotlib.pyplot as plt
 
 from scipy import signal
 from sklearn.linear_model import LinearRegression
@@ -29,98 +31,138 @@ from sklearn.metrics import mean_squared_error, r2_score
 
 
 
-class PixelTemporalVariation(qtw.QWidget):
+class PixelTemporalVariation(): #qtw.QWidget):
 
     def __init__(self, x, y, filename, acquisition_rate):
         super().__init__()
         #  start UI code
         # QLabel
-        label = qtw.QLabel('Pixel Variation 1D', self, margin=10)
+        # label = qtw.QLabel('Pixel Variation 1D', self, margin=10)
 
         # Read the image from the TIFF file as numpy array:
         imfile = tifffile.imread(filename)
-        # value of the darkness due to the microscope is the average of the first 5x5 pixel
-        # square at the top of the image over the whole stack
 
         # using the acquisition rate, tranform the x axis from frame numbet to seconds
-        timescale = np.arange(0, imfile.shape[0] / acquisition_rate, 1 / acquisition_rate)
+        #timescale = np.arange(0, imfile.shape[0] / acquisition_rate, 1 / acquisition_rate)
+        timescale = linspace(0, 499, 500)
 
-        value_of_darkness = np.mean(imfile[:, 1:5, 1:5])
-        print('value_of_darkness  ', value_of_darkness)
+        extracted_temporal_trace = imfile[:, y, x]
+        try:
+            extracted_temporal_trace_right = imfile[:, y, x+1]
+            extracted_temporal_trace_left = imfile[:, y, x - 1]
+            extracted_temporal_trace_top = imfile[:, y+1, x]
+            extracted_temporal_trace_bottom = imfile[:, y - 1, x]
 
-        temp = imfile[:, x - 10:x + 9, y - 10:y + 9]
-        print('temp  ', temp.shape)
-        extracted_temporal_trace = np.mean(temp, axis=1)
-        extracted_temporal_trace = np.mean(extracted_temporal_trace, axis=1)
+            extracted_temporal_trace_right_right = imfile[:, y, x+2]
+            extracted_temporal_trace_left_left = imfile[:, y, x - 2]
+            extracted_temporal_trace_top_top = imfile[:, y + 2, x]
+            extracted_temporal_trace_bottom_bottom = imfile[:, y - 2, x]
 
-        # detrend data
-        pf = PolynomialFeatures(degree=2)
-        timescale2 = np.reshape(timescale, (len(timescale), 1))
-        Xp = pf.fit_transform(timescale2)
-        md2 = LinearRegression()
-        md2.fit(Xp, extracted_temporal_trace)
-        trendp = md2.predict(Xp)
-        # extracted_temporal_trace = extracted_temporal_trace - trendp
+            extracted_temporal_trace_bottom_right = imfile[:, y - 1, x + 1]
+            extracted_temporal_trace_top_right = imfile[:, y + 1, x + 1]
+            extracted_temporal_trace_bottom_left = imfile[:, y - 1, x - 1]
+            extracted_temporal_trace_top_left = imfile[:, y + 1, x - 1]
 
-        # try to remove the surroundings
-        tempLeft = imfile[:, x - 16:x - 11, y - 10:y + 9]
-        tempRight = imfile[:, x + 10:x + 15, y - 10:y + 9]
-        tempTop = imfile[:, x - 10:x + 9, y + 10:y + 15]
-        tempBottom = imfile[:, x - 10:x + 9, y - 16:y - 11]
-        extracted_temporal_trace_letf = np.mean(tempLeft, axis=1)
-        extracted_temporal_trace_letf = np.mean(extracted_temporal_trace_letf, axis=1)
-        extracted_temporal_trace_right = np.mean(tempRight, axis=1)
-        extracted_temporal_trace_right = np.mean(extracted_temporal_trace_right, axis=1)
-        extracted_temporal_trace_top = np.mean(tempTop, axis=1)
-        extracted_temporal_trace_top = np.mean(extracted_temporal_trace_top, axis=1)
-        extracted_temporal_trace_bottom = np.mean(tempBottom, axis=1)
-        extracted_temporal_trace_bottom = np.mean(extracted_temporal_trace_bottom, axis=1)
-        outside = (
-                              extracted_temporal_trace_letf + extracted_temporal_trace_right + extracted_temporal_trace_top + extracted_temporal_trace_bottom) / 4
+            extracted_temporal_trace_TTT = imfile[:, y + 3, x]
+            extracted_temporal_trace_BBB = imfile[:, y - 3, x]
+            extracted_temporal_trace_LLL = imfile[:, y, x - 3]
+            extracted_temporal_trace_RRR = imfile[:, y, x + 3]
+            extracted_temporal_trace_TTR = imfile[:, y + 2, x+1]
+            extracted_temporal_trace_TTL = imfile[:, y + 2, x-1]
+            extracted_temporal_trace_BBR = imfile[:, y - 2, x + 1]
+            extracted_temporal_trace_BBL = imfile[:, y - 2, x - 1]
+            extracted_temporal_trace_TLL = imfile[:, y + 1, x - 2]
+            extracted_temporal_trace_TRR = imfile[:, y + 1, x + 2]
+            extracted_temporal_trace_BLL = imfile[:, y - 1, x - 2]
+            extracted_temporal_trace_BRR = imfile[:, y - 1, x + 2]
 
-        print('temp  ', temp.shape)
-        extracted_temporal_trace = np.mean(temp, axis=1)
-        extracted_temporal_trace = np.mean(extracted_temporal_trace, axis=1)
+            surrounding_trace_level_1 = extracted_temporal_trace
 
-        # extracted_temporal_trace = np.mean(imfile[:, x-2:x+2, y-2:y+2], axis=1)
-        # print('extracted trace ', extracted_temporal_trace.shape)
-        f_0 = np.mean(
-            extracted_temporal_trace)  # np.mean(imfile[:, x-20:x+19, y-20:y+19])  # PIXEL MEAN OF 500 stacks!!!!
-        print('shape f0', f_0)
+            surrounding_trace_level_2 = (extracted_temporal_trace +
+                                         extracted_temporal_trace_right +
+                                         extracted_temporal_trace_left +
+                                         extracted_temporal_trace_bottom +
+                                         extracted_temporal_trace_top)/5
 
-        # extracted_temporal_trace = imfile[:, x, y]
-        # f_0 = np.mean(imfile[:, x, y]) # PIXEL MEAN OF 500 stacks!!!!
-        # extracted_temporal_trace_2 = 100*(extracted_temporal_trace - f_0) / (f_0 - value_of_darkness)
-        # print(extracted_temporal_trace_2)
-        yhat = savgol_filter(extracted_temporal_trace, 5, 2)
+            surrounding_trace_level_3 = (extracted_temporal_trace +
+                                    extracted_temporal_trace_right +
+                                    extracted_temporal_trace_left +
+                                    extracted_temporal_trace_bottom +
+                                    extracted_temporal_trace_top +
+                                    extracted_temporal_trace_right_right +
+                                    extracted_temporal_trace_left_left +
+                                    extracted_temporal_trace_top_top +
+                                    extracted_temporal_trace_bottom_bottom +
+                                    extracted_temporal_trace_bottom_right +
+                                    extracted_temporal_trace_top_right +
+                                    extracted_temporal_trace_bottom_left +
+                                    extracted_temporal_trace_top_left) / 13
+
+            surrounding_trace_level_4 = (extracted_temporal_trace +
+                                         extracted_temporal_trace_right +
+                                         extracted_temporal_trace_left +
+                                         extracted_temporal_trace_bottom +
+                                         extracted_temporal_trace_top +
+                                         extracted_temporal_trace_right_right +
+                                         extracted_temporal_trace_left_left +
+                                         extracted_temporal_trace_top_top +
+                                         extracted_temporal_trace_bottom_bottom +
+                                         extracted_temporal_trace_bottom_right +
+                                         extracted_temporal_trace_top_right +
+                                         extracted_temporal_trace_bottom_left +
+                                         extracted_temporal_trace_top_left +
+                                         extracted_temporal_trace_TTT +
+                                         extracted_temporal_trace_BBB +
+                                         extracted_temporal_trace_LLL +
+                                         extracted_temporal_trace_RRR +
+                                         extracted_temporal_trace_TTR +
+                                         extracted_temporal_trace_TTL +
+                                         extracted_temporal_trace_BBR +
+                                         extracted_temporal_trace_BBL +
+                                         extracted_temporal_trace_TLL +
+                                         extracted_temporal_trace_TRR +
+                                         extracted_temporal_trace_BLL +
+                                         extracted_temporal_trace_BRR ) / 25
+        except:
+            surrounding_trace_level_3 = extracted_temporal_trace
 
         # PLOT THOSE FOR RESULTS
-        # extracted_temporal_trace_2 = signal.detrend(extracted_temporal_trace_2, type='constant')
-        # extracted_temporal_trace_2 = signal.detrend(extracted_temporal_trace_2, type='linear')
+        plt.rcParams["figure.figsize"] = (8, 4)
+        plt.plot(timescale, surrounding_trace_level_4, 'm', linewidth=1)
+        plt.grid()
+        plt.xlabel('Frame number')
+        plt.ylabel('ROI intensity')
+        plt.title(f'Plot showing the intensity variation of an ROI containing 25 pixels, \n'
+                  f'central pixel coordinates = ({x}, {y})')
+        # plt.savefig('ROI_size_variation_25_pixels.pdf', dpi=1500)
+        plt.show()
 
-        graphWidget = pg.PlotWidget()
-        pen = pg.mkPen(color=(255, 0, 0), width=1)
-        pen2 = pg.mkPen(color=(0, 0, 255), width=1)
-        graphWidget.setBackground('w')
-        graphWidget.plot(timescale, extracted_temporal_trace - outside, pen=pen)
-        # graphWidget.plot(timescale, outside, pen=pen2)
-        # graphWidget.plot(timescale, yhat, pen='b', width='3')
-        # graphWidget.plot(timescale, extracted_temporal_trace + trendp, pen=pen)
-        graphWidget.setXRange(0, imfile.shape[0] / acquisition_rate)
-        graphWidget.showGrid(x=True, y=True)
-        graphWidget.setTitle("Temporal Trace of (" + str(x) + "," + str(y) + f") of {filename}", size="30pt")
-        styles = {'color': 'b', 'font-size': '20px'}
-        graphWidget.setLabel('left', 'delta F / F', **styles)
-        graphWidget.setLabel('bottom', 'time, s', **styles)
+        '''plt.plot(timescale, surrounding_trace_level_3, 'r', linewidth=1)
+        plt.grid()
+        plt.xlabel('Frame number')
+        plt.ylabel('ROI intensity')
+        plt.title(f'Plot showing the intensity variation of an ROI containing 13 pixels, \n'
+                  f'central pixel coordinates = ({x}, {y})')
+        plt.savefig('ROI_size_variation_13_pixels.pdf', dpi=1500)
+        plt.show()
 
-        # Add widget objects to a layout
-        layout = qtw.QVBoxLayout()
-        self.setLayout(layout)
-        layout.addWidget(label)
-        layout.addWidget(graphWidget)
+        plt.plot(timescale, surrounding_trace_level_2, 'b', linewidth=1)
+        plt.grid()
+        plt.xlabel('Frame number')
+        plt.ylabel('ROI intensity')
+        plt.title(f'Plot showing the intensity variation of an ROI containing 5 pixels, \n'
+                  f'central pixel coordinates = ({x}, {y})')
+        plt.savefig('ROI_size_variation_5_pixels.pdf', dpi=1500)
+        plt.show()
 
-        #  end main UI code - Display the UI
-        self.show()
+        plt.plot(timescale, surrounding_trace_level_1, 'g', linewidth=1)
+        plt.grid()
+        plt.xlabel('Frame number')
+        plt.ylabel('ROI intensity')
+        plt.title(f'Plot showing the intensity variation of an ROI containing 1 pixel, \n'
+                  f'coordinates = ({x}, {y})')
+        plt.savefig('ROI_size_variation_1_pixel.pdf', dpi=1500)
+        plt.show()'''
 
 
 class FluorescenceIntensityMap(qtw.QWidget):
@@ -358,6 +400,7 @@ class ABLE_GUI(qtw.QWidget):
 
         progress_bar_widget.setFormat('Ready to begin the analysis')
         progress_bar_widget.setValue(0)
+
 
 class CNMFE_GUI(qtw.QWidget):
 
@@ -1016,9 +1059,9 @@ class MainWindow(qtw.QWidget):
             x_coordinate = x * scaling_factor
 
         # print(f'x/y input,  {x}  {y} new coord:  {x_coordinate}  {y_coordinate}')
-        self.w = PixelTemporalVariation(round(x_coordinate), round(y_coordinate), self.filename,
-                                        self.get_acquisition_rate())
-        self.w.show()
+        #self.w = PixelTemporalVariation(round(x_coordinate), round(y_coordinate), self.filename, self.get_acquisition_rate())
+        #self.w.show()
+        PixelTemporalVariation(round(x_coordinate), round(y_coordinate), self.filename, self.get_acquisition_rate())
 
 
 if __name__ == '__main__':
