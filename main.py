@@ -728,13 +728,13 @@ class MainWindow(qtw.QWidget):
         self.filename = self.stackViewer.openFileName
 
         # Create a button to see the varying intensity: QPushButton
-        button = qtw.QPushButton(
+        '''button = qtw.QPushButton(
             "Fluorescence variation Map",
             self,
             checkable=True,
             checked=True,
             shortcut=qtg.QKeySequence('Ctrl+p')
-        )
+        )'''
 
         # Create a button to see 1D intensity variation: QPushButton
         button_pixel_intensity_var = qtw.QPushButton(
@@ -871,7 +871,7 @@ class MainWindow(qtw.QWidget):
         simple_processing_layout = qtw.QHBoxLayout()
         simple_processing_widget.setLayout(simple_processing_layout)
         simple_processing_layout.addWidget(button_pixel_intensity_var)
-        simple_processing_layout.addWidget(button)
+        #simple_processing_layout.addWidget(button)
 
         complex_processing_widget = qtw.QGroupBox('Cell segmentation')
         complex_processing_widget.setFont(qtg.QFont('Arial', 12, weight=qtg.QFont.Bold))
@@ -922,7 +922,7 @@ class MainWindow(qtw.QWidget):
 
         ''' INTERACTIVE '''
         #  If the button for fluorescence is pressed, open a new window
-        button.clicked.connect(self.windowFluo)
+        # button.clicked.connect(self.windowFluo)
         #  If the button is pressed, open a new window
         button_pixel_intensity_var.clicked.connect(self.WindowIntensityVariation)
         #  If the for CNMFE is pressed, open a new window
@@ -931,6 +931,8 @@ class MainWindow(qtw.QWidget):
         button_PCA.clicked.connect(self.pca_trial)
         #  If the for ABLE is pressed, open a new window
         button_ABLE.clicked.connect(self.able_trial)
+        # Manual button pressed
+        button_Manual.clicked.connect(self.windowFluo)
         # as soon as the micron per pixel box has text in it, change the FOV under the tiff stack
         self.micron_per_pixel_widget.textChanged.connect(self.line_edit_text_changed)
 
